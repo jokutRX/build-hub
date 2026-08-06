@@ -1,0 +1,66 @@
+// ==========================================
+// 🎨 DESIGN SYSTEM CONSTANTS & TOKENS
+// ==========================================
+$primary: #2563eb;
+$primary-hover: #1d4ed8;
+$primary-light: #eff6ff;
+$bg-main: #f8fafc;
+$surface: #ffffff;
+$border: #e2e8f0;
+
+$text-main: #0f172a;
+$text-muted: #64748b;
+$text-light: #94a3b8;
+
+// Priorities colors
+$critical: #ef4444;
+$critical-bg: #fef2f2;
+$critical-border: #fecaca;
+
+$medium: #f59e0b;
+$medium-bg: #fffbeb;
+$medium-border: #fde68a;
+
+$low: #10b981;
+$low-bg: #ecfdf5;
+$low-border: #a7f3d0;
+
+// Mixins
+@mixin card-shadow {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  }
+}
+
+@mixin input-base {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  color: $text-main;
+  background-color: $surface;
+  border: 1px solid $border;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.15);
+  }
+
+  &::placeholder {
+    color: $text-light;
+  }
+}
+
+// Global baseline
+body {
+  background-color: $bg-main;
+  color: $text-main;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}

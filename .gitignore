@@ -1,0 +1,23 @@
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+###> frontend & vite ###
+node_modules/
+dist/
+.vite/
+*.local
+###< frontend & vite ###
+
+###> IDE & System ###
+.idea/
+.vscode/
+.DS_Store
+*.log
+###< IDE & System ###
