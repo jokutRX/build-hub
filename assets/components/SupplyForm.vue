@@ -6,7 +6,14 @@
         <h3>Новая заявка на закупку</h3>
         <p>Укажите детали позиции и приоритет поставки</p>
       </div>
-      <button class="btn-close" @click="$emit('close')" title="Закрыть">✕</button>
+      <button 
+        class="btn-close" 
+        :disabled="isSubmitting" 
+        @click="$emit('close')" 
+        title="Закрыть"
+      >
+        ✕
+      </button>
     </div>
 
     <!-- Тело формы -->
@@ -19,6 +26,7 @@
             v-model="form.title" 
             type="text" 
             placeholder="Например: Арматура А500С 12мм" 
+            :disabled="isSubmitting"
             required 
           />
         </div>
@@ -26,7 +34,7 @@
         <!-- Объект -->
         <div class="form-field">
           <label>ОБЪЕКТ / ПЛОЩАДКА</label>
-          <select v-model="form.object">
+          <select v-model="form.object" :disabled="isSubmitting">
             <option value="ЖК Северный">ЖК Северный</option>
             <option value="ЖК Южный">ЖК Южный</option>
             <option value="ТЦ Центральный">ТЦ Центральный</option>
@@ -42,12 +50,13 @@
               type="number" 
               step="0.1" 
               class="input-no-spinner"
+              :disabled="isSubmitting"
               required 
             />
           </div>
           <div class="form-field">
             <label>ЕД. ИЗМЕРЕНИЯ</label>
-            <select v-model="form.unit">
+            <select v-model="form.unit" :disabled="isSubmitting">
               <option value="тонны">тонны</option>
               <option value="шт">шт</option>
               <option value="м²">м²</option>
@@ -63,6 +72,7 @@
             <button 
               type="button"
               :class="['priority-btn', 'low', { active: form.priority === 'LOW' }]"
+              :disabled="isSubmitting"
               @click="form.priority = 'LOW'"
             >
               ● НИЗКИЙ
@@ -70,6 +80,7 @@
             <button 
               type="button"
               :class="['priority-btn', 'medium', { active: form.priority === 'MEDIUM' }]"
+              :disabled="isSubmitting"
               @click="form.priority = 'MEDIUM'"
             >
               ● СРЕДНИЙ
@@ -77,6 +88,7 @@
             <button 
               type="button"
               :class="['priority-btn', 'critical', { active: form.priority === 'CRITICAL' }]"
+              :disabled="isSubmitting"
               @click="form.priority = 'CRITICAL'"
             >
               ● КРИТИЧНЫЙ
@@ -85,13 +97,24 @@
         </div>
       </div>
 
-      <!-- Кнопки действий всегда прижаты к низу -->
+      <!-- Кнопки действий -->
       <div class="form-actions">
-        <button type="button" class="btn-cancel" @click="$emit('close')">
+        <button 
+          type="button" 
+          class="btn-cancel" 
+          :disabled="isSubmitting" 
+          @click="$emit('close')"
+        >
           Отмена
         </button>
-        <button type="submit" class="btn-submit">
-          + Добавить в реестр
+
+        <button 
+          type="submit" 
+          class="btn-submit" 
+          :disabled="isSubmitting"
+        >
+          <span v-if="isSubmitting" class="btn-loader"></span>
+          <span>{{ isSubmitting ? 'Сохранение...' : '+ Добавить в реестр' }}</span>
         </button>
       </div>
     </form>
@@ -99,9 +122,11 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { ref, reactive } from 'vue'
 
 const emit = defineEmits(['create', 'close'])
+
+const isSubmitting = ref(false)
 
 const form = reactive({
   title: '',
@@ -111,11 +136,24 @@ const form = reactive({
   priority: 'MEDIUM'
 })
 
-const handleSubmit = () => {
-  emit('create', { ...form })
-  form.title = ''
-  form.amount = 100
-  form.priority = 'MEDIUM'
+const handleSubmit = async () => {
+  if (isSubmitting.value) return
+
+  isSubmitting.value = true
+
+  try {
+    // Отправляем событие наружу (поддерживает как обычный вызов, так и асинхронный Promise)
+    await emit('create', { ...form })
+    
+    // Сбрасываем форму только после успешной отправки
+    form.title = ''
+    form.amount = 100
+    form.priority = 'MEDIUM'
+  } catch (err) {
+    console.error('Ошибка при отправке формы:', err)
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 
@@ -149,7 +187,9 @@ const handleSubmit = () => {
       cursor: pointer;
       padding: 0.2rem 0.5rem;
       border-radius: 4px;
-      &:hover { background: #f1f5f9; color: $text-main; }
+
+      &:hover:not(:disabled) { background: #f1f5f9; color: $text-main; }
+      &:disabled { opacity: 0.5; cursor: not-allowed; }
     }
   }
 
@@ -159,13 +199,13 @@ const handleSubmit = () => {
     justify-content: space-between;
     flex: 1;
     padding-top: 1.5rem;
-    overflow: hidden; /* Ограничиваем контент для красивого прижатия кнопок */
+    overflow: hidden;
 
     .form-fields-wrapper {
       display: flex;
       flex-direction: column;
       gap: 1.25rem;
-      overflow-y: auto; /* Внутренний скролл только для полей, если экран очень маленький */
+      overflow-y: auto;
       padding-right: 0.25rem;
     }
 
@@ -187,11 +227,16 @@ const handleSubmit = () => {
         border-radius: 8px;
         font-size: 0.9rem;
         outline: none;
-        transition: border-color 0.2s;
-        &:focus { border-color: $primary; }
+        transition: border-color 0.2s, background-color 0.2s;
+
+        &:focus:not(:disabled) { border-color: $primary; }
+        &:disabled {
+          background-color: #f8fafc;
+          color: $text-muted;
+          cursor: not-allowed;
+        }
       }
 
-      /* Скрытие стрелочек спиннера у инпута типа number */
       .input-no-spinner {
         -moz-appearance: textfield;
         &::-webkit-outer-spin-button,
@@ -235,10 +280,14 @@ const handleSubmit = () => {
           color: #dc2626;
           &.active { background: #fef2f2; border-color: #ef4444; }
         }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
       }
     }
 
-    /* Фиксированная футер-зона с кнопками */
     .form-actions {
       padding-top: 1.25rem;
       margin-top: 1.25rem;
@@ -256,7 +305,13 @@ const handleSubmit = () => {
         font-weight: 700;
         color: $text-muted;
         cursor: pointer;
-        &:hover { background: #e2e8f0; }
+        transition: background 0.2s;
+
+        &:hover:not(:disabled) { background: #e2e8f0; }
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
       }
 
       .btn-submit {
@@ -268,9 +323,37 @@ const handleSubmit = () => {
         border-radius: 8px;
         font-weight: 700;
         cursor: pointer;
-        &:hover { background: color.adjust(#2563eb, $lightness: -5%); }
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: background 0.2s, opacity 0.2s;
+
+        &:hover:not(:disabled) { 
+          background: color.adjust(#2563eb, $lightness: -5%); 
+        }
+
+        &:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+          background: $primary;
+        }
+
+        /* Микро-спиннер во время загрузки */
+        .btn-loader {
+          width: 14px;
+          height: 14px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top-color: #ffffff;
+          border-radius: 50%;
+          animation: spin 0.6s linear infinite;
+        }
       }
     }
   }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>

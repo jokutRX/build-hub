@@ -1,6 +1,6 @@
 <template>
   <div class="page-container">
-    <!-- Шапка страницы с кнопкой вызова формы -->
+    <!-- Шапка страницы -->
     <header class="page-header">
       <div class="header-text">
         <h1>Заявки на закупку</h1>
@@ -15,74 +15,80 @@
       </button>
     </header>
 
-    <!-- Секция Реестра с фильтрами -->
+    <!-- Реестр и фильтры -->
     <section class="registry-section">
       <div class="registry-header">
         <div class="title-wrap">
           <h2>Реестр заявок</h2>
-          <span class="count-badge">{{ filteredRequests.length }} позиций</span>
         </div>
 
         <div class="filters-bar">
-          <div class="filter-group">
-            <label>Дата поставки:</label>
-            <input type="date" v-model="selectedDate" class="filter-input" />
-            <button 
-              :class="['btn-quick-date', { active: isTodaySelected }]" 
-              @click="setToday"
-            >
-              Сегодня
-            </button>
-            <button 
-              :class="['btn-quick-date', { active: selectedDate === '' }]" 
-              @click="selectedDate = ''"
-            >
-              Все
-            </button>
+          <div class="filter-controls">
+            <div class="filter-group">
+              <label>Дата поставки:</label>
+              <input type="date" v-model="selectedDate" class="filter-input" />
+              <button :class="['btn-quick-date', { active: isTodaySelected }]" @click="setToday">
+                Сегодня
+              </button>
+              <button :class="['btn-quick-date', { active: selectedDate === '' }]" @click="selectedDate = ''">
+                Все
+              </button>
+            </div>
+
+            <div class="filter-group">
+              <label>Приоритет:</label>
+              <select v-model="selectedPriority" class="filter-select">
+                <option value="ALL">Все приоритеты</option>
+                <option value="CRITICAL">Критичный</option>
+                <option value="MEDIUM">Средний</option>
+                <option value="LOW">Низкий</option>
+              </select>
+            </div>
           </div>
 
-          <div class="filter-group">
-            <label>Приоритет:</label>
-            <select v-model="selectedPriority" class="filter-select">
-              <option value="ALL">Все приоритеты</option>
-              <option value="CRITICAL">Критичный</option>
-              <option value="MEDIUM">Средний</option>
-              <option value="LOW">Низкий</option>
-            </select>
-          </div>
+          <!-- Счетчик позиций перенесен в правую часть блока фильтров -->
+          <span class="count-badge">{{ filteredRequests.length }} позиций</span>
         </div>
       </div>
 
-      <!-- Список заявок -->
+      <!-- Реестр заявок -->
       <SupplyList 
         :requests="filteredRequests" 
         :loading="loading" 
-        @delete-request="handleDelete" 
+        :pendingDeleteIds="pendingDelete ? [pendingDelete.id] : []"
+        @request-delete="initiateDelete" 
       />
     </section>
 
-    <!-- ВЫДВИЖНАЯ ПАНЕЛЬ С ФОРМОЙ (DRAWER) -->
+    <!-- Выдвижная панель с формой (Drawer) -->
     <Teleport to="body">
       <Transition name="drawer">
         <div v-if="isFormOpen" class="drawer-overlay" @click.self="isFormOpen = false">
           <div class="drawer-content">
-            <SupplyForm 
-              @create="handleCreate" 
-              @close="isFormOpen = false" 
-            />
+            <SupplyForm @create="handleCreate" @close="isFormOpen = false" />
           </div>
         </div>
       </Transition>
     </Teleport>
 
-    <!-- УВЕДОМЛЕНИЯ (TOAST) -->
+    <!-- Стандартное уведомление (Успех/Ошибка) -->
     <Teleport to="body">
       <ToastNotification 
         v-model="toast.show" 
         :title="toast.title" 
         :message="toast.message" 
         :type="toast.type" 
-        :duration="5000" 
+      />
+    </Teleport>
+
+    <!-- Telegram-Style Undo Delete Toast (С круговым таймером) -->
+    <Teleport to="body">
+      <DeleteUndoToast 
+        :show="!!pendingDelete" 
+        :title="pendingDelete?.title || ''" 
+        :duration="5"
+        @undo="cancelDelete" 
+        @timeout="confirmDelete" 
       />
     </Teleport>
   </div>
@@ -94,6 +100,7 @@ import { supplyApi } from '../api/supplyApi.js'
 import SupplyForm from '../components/SupplyForm.vue'
 import SupplyList from '../components/SupplyList.vue'
 import ToastNotification from '../components/ToastNotification.vue'
+import DeleteUndoToast from '../components/DeleteUndoToast.vue'
 
 const getTodayString = () => new Date().toISOString().split('T')[0]
 
@@ -103,7 +110,9 @@ const isFormOpen = ref(false)
 const selectedDate = ref(getTodayString())
 const selectedPriority = ref('ALL')
 
-// Состояние для тоаста
+// Состояние отложенного удаления (Telegram Undo)
+const pendingDelete = ref(null)
+
 const toast = reactive({
   show: false,
   title: '',
@@ -119,17 +128,14 @@ const showToast = (title, message, type = 'success') => {
 }
 
 const isTodaySelected = computed(() => selectedDate.value === getTodayString())
-
-const setToday = () => {
-  selectedDate.value = getTodayString()
-}
+const setToday = () => { selectedDate.value = getTodayString() }
 
 const loadRequests = async () => {
   loading.value = true
   try {
     requests.value = await supplyApi.getAll()
   } catch (err) {
-    console.error('Ошибка при загрузке заявок:', err)
+    console.error('Ошибка загрузки заявок:', err)
     showToast('Ошибка загрузки', 'Не удалось получить список заявок с сервера', 'error')
   } finally {
     loading.value = false
@@ -156,29 +162,45 @@ const handleCreate = async (newRequestData) => {
 
     await loadRequests()
     isFormOpen.value = false
-    
-    // Успешный тоаст
-    showToast(
-      'Заявка создана!', 
-      `Позиция "${newRequestData.title}" успешно добавлена в реестр.`, 
-      'success'
-    )
+    showToast('Заявка создана!', `Позиция "${newRequestData.title}" добавлена в реестр.`, 'success')
   } catch (err) {
-    console.error('Ошибка при создании:', err)
-    
-    // Ошибка тоаст
-    const errorMsg = err.response?.data?.error || 'Не удалось сохранить заявку. Проверьте данные.'
-    showToast('Ошибка сохранения', errorMsg, 'error')
+    console.error('Ошибка создания:', err)
+    showToast('Ошибка сохранения', 'Не удалось сохранить заявку', 'error')
   }
 }
 
-const handleDelete = async (id) => {
+/* --- ЛОГИКА ОТЛОЖЕННОГО УДАЛЕНИЯ (TELEGRAM UNDO) --- */
+
+// 1. Старт процесса удаления (карточка скрывается из списка)
+const initiateDelete = (item) => {
+  if (pendingDelete.value) {
+    confirmDelete()
+  }
+  pendingDelete.value = item
+}
+
+// 2. Отмена удаления пользователем
+const cancelDelete = () => {
+  pendingDelete.value = null
+}
+
+// 3. Подтверждение удаления (таймер истек)
+const confirmDelete = async () => {
+  if (!pendingDelete.value) return
+
+  const itemToDelete = pendingDelete.value
+
   try {
-    await supplyApi.delete(id)
+    await supplyApi.delete(itemToDelete.id)
     await loadRequests()
-    showToast('Удалено', 'Заявка успешно удалена из системы', 'success')
   } catch (err) {
-    showToast('Ошибка удаления', 'Не удалось удалить заявку', 'error')
+    console.error('Ошибка при удалении:', err)
+    showToast('Ошибка удаления', 'Не удалось удалить заявку с сервера', 'error')
+    await loadRequests()
+  } finally {
+    if (pendingDelete.value?.id === itemToDelete.id) {
+      pendingDelete.value = null
+    }
   }
 }
 
@@ -237,29 +259,25 @@ onMounted(loadRequests)
       margin-bottom: 1.25rem;
 
       .title-wrap {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-
-        h2 { font-size: 1.2rem; font-weight: 800; color: $text-main; margin: 0; }
-        .count-badge {
-          background: #eff6ff;
-          color: $primary;
-          font-size: 0.75rem;
-          font-weight: 700;
-          padding: 0.2rem 0.6rem;
-          border-radius: 12px;
-        }
+        h2 { font-size: 1.25rem; font-weight: 800; color: $text-main; margin: 0; }
       }
 
       .filters-bar {
         display: flex;
-        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
         gap: 1.25rem;
         background: #ffffff;
         padding: 0.85rem 1.25rem;
         border: 1px solid $border;
         border-radius: 10px;
+
+        .filter-controls {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 1.25rem;
+        }
 
         .filter-group {
           display: flex;
@@ -293,12 +311,23 @@ onMounted(loadRequests)
             &.active { background: $primary; color: #fff; }
           }
         }
+
+        .count-badge {
+          margin-left: auto;
+          background: #eff6ff;
+          color: $primary;
+          font-size: 0.8rem;
+          font-weight: 700;
+          padding: 0.35rem 0.75rem;
+          border-radius: 8px;
+          white-space: nowrap;
+        }
       }
     }
   }
 }
 
-/* СТИЛИ ВЫДВИЖНОЙ ПАНЕЛИ (DRAWER) */
+/* Стили выкатной панели Drawer */
 .drawer-overlay {
   position: fixed;
   inset: 0;
@@ -322,11 +351,9 @@ onMounted(loadRequests)
   box-sizing: border-box;
 }
 
-/* Анимация появления drawer */
 .drawer-enter-active,
 .drawer-leave-active {
   transition: opacity 0.25s ease;
-
   .drawer-content {
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -335,7 +362,6 @@ onMounted(loadRequests)
 .drawer-enter-from,
 .drawer-leave-to {
   opacity: 0;
-
   .drawer-content {
     transform: translateX(100%);
   }
