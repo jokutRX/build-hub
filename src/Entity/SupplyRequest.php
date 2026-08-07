@@ -30,6 +30,19 @@ class SupplyRequest implements JsonSerializable
     #[ORM\Column(length: 20)]
     private ?string $priority = null;
 
+    // --- НОВЫЕ ПОЛЯ ЛОГИСТИКИ И РАЗГРУЗКИ ---
+
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $deliveryTimeStart = null;
+
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $deliveryTimeEnd = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $unloadingEquipment = null;
+
+    // ----------------------------------------
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -55,6 +68,19 @@ class SupplyRequest implements JsonSerializable
     public function getPriority(): ?string { return $this->priority; }
     public function setPriority(string $priority): static { $this->priority = $priority; return $this; }
 
+    // --- ГЕТТЕРЫ И СЕТТЕРЫ ДЛЯ ЛОГИСТИКИ ---
+
+    public function getDeliveryTimeStart(): ?string { return $this->deliveryTimeStart; }
+    public function setDeliveryTimeStart(?string $deliveryTimeStart): static { $this->deliveryTimeStart = $deliveryTimeStart; return $this; }
+
+    public function getDeliveryTimeEnd(): ?string { return $this->deliveryTimeEnd; }
+    public function setDeliveryTimeEnd(?string $deliveryTimeEnd): static { $this->deliveryTimeEnd = $deliveryTimeEnd; return $this; }
+
+    public function getUnloadingEquipment(): ?string { return $this->unloadingEquipment; }
+    public function setUnloadingEquipment(?string $unloadingEquipment): static { $this->unloadingEquipment = $unloadingEquipment; return $this; }
+
+    // ----------------------------------------
+
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
     public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
 
@@ -70,6 +96,9 @@ class SupplyRequest implements JsonSerializable
             'quantity' => $this->quantity,
             'unit' => $this->unit,
             'priority' => $this->priority,
+            'deliveryTimeStart' => $this->deliveryTimeStart,
+            'deliveryTimeEnd' => $this->deliveryTimeEnd,
+            'unloadingEquipment' => $this->unloadingEquipment,
             'createdAt' => $this->createdAt?->format(\DateTimeInterface::ATOM),
         ];
     }

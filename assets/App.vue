@@ -1,4 +1,4 @@
-<!-- assets/App.vue -->
+<!-- src/App.vue -->
 <template>
   <div class="app-layout">
     <AppSidebar />
@@ -12,13 +12,12 @@
 import AppSidebar from './components/AppSidebar.vue'
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @use "./styles/main.scss" as *;
 
 .app-layout {
   display: flex;
   min-height: 100vh;
-  /* Заменили переменную на прямую/стандартную для проекта */
   background-color: #f8fafc; 
 
   .main-content {

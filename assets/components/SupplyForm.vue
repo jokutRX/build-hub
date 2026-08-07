@@ -1,120 +1,112 @@
 <template>
   <div class="form-container">
-    <!-- Шапка панели с кнопкой закрытия -->
     <div class="form-header">
-      <div class="title-group">
-        <h3>Новая заявка на закупку</h3>
-        <p>Укажите детали позиции и приоритет поставки</p>
-      </div>
-      <button 
-        class="btn-close" 
-        :disabled="isSubmitting" 
-        @click="$emit('close')" 
-        title="Закрыть"
-      >
-        ✕
-      </button>
+      <h2>Новая заявка</h2>
+      <button class="btn-close" type="button" @click="$emit('close')">✕</button>
     </div>
 
-    <!-- Тело формы -->
-    <form @submit.prevent="handleSubmit" class="form-body">
-      <div class="form-fields-wrapper">
-        <!-- Наименование -->
-        <div class="form-field">
-          <label>НАИМЕНОВАНИЕ МАТЕРИАЛА / ОБОРУДОВАНИЯ</label>
+    <form @submit.prevent="handleSubmit" class="supply-form">
+      <!-- Наименование -->
+      <div class="form-group">
+        <label>Наименование материала / оборудования *</label>
+        <input 
+          type="text" 
+          v-model.trim="form.title" 
+          placeholder="Например: Бетон М300" 
+          required 
+          class="form-input" 
+        />
+      </div>
+
+      <!-- Объект -->
+      <div class="form-group">
+        <label>Строительный объект *</label>
+        <input 
+          type="text" 
+          v-model.trim="form.object" 
+          placeholder="Например: ТЦ Центральный" 
+          required 
+          class="form-input" 
+        />
+      </div>
+
+      <!-- Количество (Без стрелочек) и Единицы измерения -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Количество *</label>
           <input 
-            v-model="form.title" 
-            type="text" 
-            placeholder="Например: Арматура А500С 12мм" 
-            :disabled="isSubmitting"
+            type="number" 
+            v-model.number="form.amount" 
+            min="0.1" 
+            step="any" 
             required 
+            class="form-input no-spinners" 
           />
         </div>
 
-        <!-- Объект -->
-        <div class="form-field">
-          <label>ОБЪЕКТ / ПЛОЩАДКА</label>
-          <select v-model="form.object" :disabled="isSubmitting">
-            <option value="ЖК Северный">ЖК Северный</option>
-            <option value="ЖК Южный">ЖК Южный</option>
-            <option value="ТЦ Центральный">ТЦ Центральный</option>
+        <div class="form-group">
+          <label>Ед. измерения</label>
+          <select v-model="form.unit" class="form-select">
+            <option value="тонны">тонны</option>
+            <option value="шт">шт</option>
+            <option value="м³">м³</option>
+            <option value="м²">м²</option>
+            <option value="кг">кг</option>
           </select>
         </div>
+      </div>
 
-        <!-- Количество и Ед. измерения -->
-        <div class="form-row">
-          <div class="form-field">
-            <label>КОЛИЧЕСТВО</label>
-            <input 
-              v-model.number="form.amount" 
-              type="number" 
-              step="0.1" 
-              class="input-no-spinner"
-              :disabled="isSubmitting"
-              required 
-            />
-          </div>
-          <div class="form-field">
-            <label>ЕД. ИЗМЕРЕНИЯ</label>
-            <select v-model="form.unit" :disabled="isSubmitting">
-              <option value="тонны">тонны</option>
-              <option value="шт">шт</option>
-              <option value="м²">м²</option>
-              <option value="м³">м³</option>
-            </select>
-          </div>
+      <!-- Приоритет -->
+      <div class="form-group">
+        <label>Приоритет</label>
+        <select v-model="form.priority" class="form-select">
+          <option value="CRITICAL">Критичный</option>
+          <option value="MEDIUM">Средний</option>
+          <option value="LOW">Низкий</option>
+        </select>
+      </div>
+
+      <!-- Окно доставки (24-часовой формат, step=60) -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Время доставки С</label>
+          <input 
+            type="time" 
+            v-model="form.deliveryTimeStart" 
+            step="60"
+            class="form-input" 
+          />
         </div>
 
-        <!-- Приоритет -->
-        <div class="form-field">
-          <label>ПРИОРИТЕТ СНАБЖЕНИЯ</label>
-          <div class="priority-selector">
-            <button 
-              type="button"
-              :class="['priority-btn', 'low', { active: form.priority === 'LOW' }]"
-              :disabled="isSubmitting"
-              @click="form.priority = 'LOW'"
-            >
-              ● НИЗКИЙ
-            </button>
-            <button 
-              type="button"
-              :class="['priority-btn', 'medium', { active: form.priority === 'MEDIUM' }]"
-              :disabled="isSubmitting"
-              @click="form.priority = 'MEDIUM'"
-            >
-              ● СРЕДНИЙ
-            </button>
-            <button 
-              type="button"
-              :class="['priority-btn', 'critical', { active: form.priority === 'CRITICAL' }]"
-              :disabled="isSubmitting"
-              @click="form.priority = 'CRITICAL'"
-            >
-              ● КРИТИЧНЫЙ
-            </button>
-          </div>
+        <div class="form-group">
+          <label>Время доставки ДО</label>
+          <input 
+            type="time" 
+            v-model="form.deliveryTimeEnd" 
+            step="60"
+            :class="['form-input', { 'input-error': !!timeError }]" 
+          />
         </div>
+      </div>
+
+      <!-- Вывод ошибки времени и блокировка -->
+      <div v-if="timeError" class="error-banner">
+        ⚠️ {{ timeError }}
+      </div>
+
+      <!-- Разгрузочная техника -->
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" v-model="form.unloadingEquipment" />
+          <span>Требуется спецтехника для разгрузки</span>
+        </label>
       </div>
 
       <!-- Кнопки действий -->
       <div class="form-actions">
-        <button 
-          type="button" 
-          class="btn-cancel" 
-          :disabled="isSubmitting" 
-          @click="$emit('close')"
-        >
-          Отмена
-        </button>
-
-        <button 
-          type="submit" 
-          class="btn-submit" 
-          :disabled="isSubmitting"
-        >
-          <span v-if="isSubmitting" class="btn-loader"></span>
-          <span>{{ isSubmitting ? 'Сохранение...' : '+ Добавить в реестр' }}</span>
+        <button type="button" class="btn-secondary" @click="$emit('close')">Отмена</button>
+        <button type="submit" class="btn-primary" :disabled="isSubmitDisabled">
+          Создать заявку
         </button>
       </div>
     </form>
@@ -122,43 +114,45 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { reactive, computed } from 'vue'
 
 const emit = defineEmits(['create', 'close'])
 
-const isSubmitting = ref(false)
-
 const form = reactive({
   title: '',
-  object: 'ЖК Северный',
-  amount: 100,
+  object: '',
+  amount: 1,
   unit: 'тонны',
-  priority: 'MEDIUM'
+  priority: 'MEDIUM',
+  deliveryTimeStart: '09:00',
+  deliveryTimeEnd: '12:00',
+  unloadingEquipment: false
 })
 
-const handleSubmit = async () => {
-  if (isSubmitting.value) return
+// Проверка корректности промежутка времени
+const timeError = computed(() => {
+  if (!form.deliveryTimeStart || !form.deliveryTimeEnd) return ''
 
-  isSubmitting.value = true
-
-  try {
-    // Отправляем событие наружу (поддерживает как обычный вызов, так и асинхронный Promise)
-    await emit('create', { ...form })
-    
-    // Сбрасываем форму только после успешной отправки
-    form.title = ''
-    form.amount = 100
-    form.priority = 'MEDIUM'
-  } catch (err) {
-    console.error('Ошибка при отправке формы:', err)
-  } finally {
-    isSubmitting.value = false
+  // Сравнение строк в формате "HH:mm" работает корректно (например "09:00" > "07:00")
+  if (form.deliveryTimeEnd < form.deliveryTimeStart) {
+    return 'Время окончания не может быть раньше времени начала (разгрузка в пределах одних суток).'
   }
+
+  return ''
+})
+
+// Блокировка кнопки если есть ошибка по времени или не заполнены обязательные поля
+const isSubmitDisabled = computed(() => {
+  return !!timeError.value || !form.title || !form.object || !form.amount
+})
+
+const handleSubmit = () => {
+  if (isSubmitDisabled.value) return
+  emit('create', { ...form })
 }
 </script>
 
 <style lang="scss" scoped>
-@use "sass:color";
 @use "../styles/main.scss" as *;
 
 .form-container {
@@ -169,80 +163,54 @@ const handleSubmit = async () => {
   .form-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    padding-bottom: 1.25rem;
-    border-bottom: 1px solid $border;
-    flex-shrink: 0;
+    align-items: center;
+    margin-bottom: 1.5rem;
 
-    .title-group {
-      h3 { font-size: 1.2rem; font-weight: 800; color: $text-main; margin: 0; }
-      p { font-size: 0.85rem; color: $text-muted; margin: 0.25rem 0 0 0; }
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: $text-main;
+      margin: 0;
     }
 
     .btn-close {
       background: transparent;
       border: none;
-      font-size: 1.25rem;
-      color: $text-muted;
+      font-size: 1.2rem;
+      color: $text-light;
       cursor: pointer;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
 
-      &:hover:not(:disabled) { background: #f1f5f9; color: $text-main; }
-      &:disabled { opacity: 0.5; cursor: not-allowed; }
+      &:hover {
+        background: #f1f5f9;
+        color: $text-main;
+      }
     }
   }
 
-  .form-body {
+  .supply-form {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    flex: 1;
-    padding-top: 1.5rem;
-    overflow: hidden;
+    gap: 1.1rem;
 
-    .form-fields-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-      overflow-y: auto;
-      padding-right: 0.25rem;
-    }
-
-    .form-field {
+    .form-group {
       display: flex;
       flex-direction: column;
       gap: 0.4rem;
 
       label {
-        font-size: 0.7rem;
-        font-weight: 800;
+        font-size: 0.8rem;
+        font-weight: 700;
         color: $text-muted;
-        letter-spacing: 0.05em;
       }
 
-      input, select {
-        padding: 0.65rem 0.85rem;
-        border: 1px solid $border;
-        border-radius: 8px;
-        font-size: 0.9rem;
-        outline: none;
-        transition: border-color 0.2s, background-color 0.2s;
+      .form-input, .form-select {
+        @include input-base;
 
-        &:focus:not(:disabled) { border-color: $primary; }
-        &:disabled {
-          background-color: #f8fafc;
-          color: $text-muted;
-          cursor: not-allowed;
-        }
-      }
-
-      .input-no-spinner {
-        -moz-appearance: textfield;
-        &::-webkit-outer-spin-button,
-        &::-webkit-inner-spin-button {
-          -webkit-appearance: none;
-          margin: 0;
+        &.input-error {
+          border-color: $critical;
+          background-color: $critical-bg;
         }
       }
     }
@@ -253,107 +221,78 @@ const handleSubmit = async () => {
       gap: 1rem;
     }
 
-    .priority-selector {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.5rem;
+    .error-banner {
+      background-color: $critical-bg;
+      color: $critical;
+      border: 1px solid $critical-border;
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
 
-      .priority-btn {
-        padding: 0.6rem 0.4rem;
-        border: 1px solid $border;
-        background: #fff;
-        border-radius: 8px;
-        font-size: 0.75rem;
-        font-weight: 700;
+    .checkbox-group {
+      margin-top: 0.25rem;
+
+      .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
         cursor: pointer;
-        transition: all 0.2s;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: $text-main;
 
-        &.low {
-          color: #16a34a;
-          &.active { background: #f0fdf4; border-color: #22c55e; }
-        }
-        &.medium {
-          color: #d97706;
-          &.active { background: #fefce8; border-color: #eab308; }
-        }
-        &.critical {
-          color: #dc2626;
-          &.active { background: #fef2f2; border-color: #ef4444; }
-        }
-
-        &:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
+        input[type="checkbox"] {
+          width: 16px;
+          height: 16px;
+          accent-color: $primary;
+          cursor: pointer;
         }
       }
     }
 
     .form-actions {
-      padding-top: 1.25rem;
-      margin-top: 1.25rem;
-      border-top: 1px solid $border;
       display: flex;
+      justify-content: flex-end;
       gap: 0.75rem;
-      flex-shrink: 0;
+      margin-top: 1.5rem;
 
-      .btn-cancel {
-        flex: 1;
-        padding: 0.75rem;
-        background: #f1f5f9;
-        border: none;
+      button {
+        padding: 0.65rem 1.25rem;
         border-radius: 8px;
         font-weight: 700;
-        color: $text-muted;
+        font-size: 0.875rem;
         cursor: pointer;
-        transition: background 0.2s;
+        border: none;
+        transition: all 0.2s;
+      }
 
-        &:hover:not(:disabled) { background: #e2e8f0; }
+      .btn-secondary {
+        background: #f1f5f9;
+        color: $text-muted;
+
+        &:hover {
+          background: #e2e8f0;
+        }
+      }
+
+      .btn-primary {
+        background: $primary;
+        color: #ffffff;
+
+        &:hover:not(:disabled) {
+          background: $primary-hover;
+        }
+
         &:disabled {
+          background: $text-light;
           opacity: 0.6;
           cursor: not-allowed;
         }
       }
-
-      .btn-submit {
-        flex: 2;
-        padding: 0.75rem;
-        background: $primary;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        font-weight: 700;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        transition: background 0.2s, opacity 0.2s;
-
-        &:hover:not(:disabled) { 
-          background: color.adjust(#2563eb, $lightness: -5%); 
-        }
-
-        &:disabled {
-          opacity: 0.65;
-          cursor: not-allowed;
-          background: $primary;
-        }
-
-        /* Микро-спиннер во время загрузки */
-        .btn-loader {
-          width: 14px;
-          height: 14px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top-color: #ffffff;
-          border-radius: 50%;
-          animation: spin 0.6s linear infinite;
-        }
-      }
     }
   }
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 </style>

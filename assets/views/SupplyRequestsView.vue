@@ -46,8 +46,8 @@
             </div>
           </div>
 
-          <!-- Счетчик позиций перенесен в правую часть блока фильтров -->
-          <span class="count-badge">{{ filteredRequests.length }} позиций</span>
+          <!-- Динамический счетчик позиций с правильным склонением -->
+          <span class="count-badge">{{ formattedPositionsCount }}</span>
         </div>
       </div>
 
@@ -71,7 +71,7 @@
       </Transition>
     </Teleport>
 
-    <!-- Стандартное уведомление (Успех/Ошибка) -->
+    <!-- Уведомления (Toast) -->
     <Teleport to="body">
       <ToastNotification 
         v-model="toast.show" 
@@ -81,7 +81,7 @@
       />
     </Teleport>
 
-    <!-- Telegram-Style Undo Delete Toast (С круговым таймером) -->
+    <!-- Telegram-Style Undo Delete Toast -->
     <Teleport to="body">
       <DeleteUndoToast 
         :show="!!pendingDelete" 
@@ -97,12 +97,20 @@
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
 import { supplyApi } from '../api/supplyApi.js'
+import { pluralize } from '../utils/formatters.js'
 import SupplyForm from '../components/SupplyForm.vue'
 import SupplyList from '../components/SupplyList.vue'
 import ToastNotification from '../components/ToastNotification.vue'
 import DeleteUndoToast from '../components/DeleteUndoToast.vue'
 
-const getTodayString = () => new Date().toISOString().split('T')[0]
+// Функция локальной даты YYYY-MM-DD (без сдвига по UTC)
+const getTodayString = () => {
+  const date = new Date()
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
 const requests = ref([])
 const loading = ref(false)
@@ -142,14 +150,27 @@ const loadRequests = async () => {
   }
 }
 
+// Фильтрация списка заявок (моментально скрывает элемент при подготовке к удалению)
 const filteredRequests = computed(() => {
   return requests.value.filter(item => {
-    const matchesDate = !selectedDate.value || item.createdAt?.startsWith(selectedDate.value) || item.date === selectedDate.value
+    if (pendingDelete.value && item.id === pendingDelete.value.id) {
+      return false
+    }
+
+    const itemDate = item.createdAt ? item.createdAt.split('T')[0] : item.date
+    const matchesDate = !selectedDate.value || itemDate === selectedDate.value
     const matchesPriority = selectedPriority.value === 'ALL' || item.priority === selectedPriority.value
     return matchesDate && matchesPriority
   })
 })
 
+// Склонение слова "позиция" для баджа
+const formattedPositionsCount = computed(() => {
+  const count = filteredRequests.value.length
+  return `${count} ${pluralize(count, ['позиция', 'позиции', 'позиций'])}`
+})
+
+/* --- СОЗДАНИЕ ЗАЯВКИ --- */
 const handleCreate = async (newRequestData) => {
   try {
     await supplyApi.create({
@@ -157,7 +178,10 @@ const handleCreate = async (newRequestData) => {
       site: newRequestData.object,
       quantity: newRequestData.amount,
       unit: newRequestData.unit,
-      priority: newRequestData.priority
+      priority: newRequestData.priority,
+      deliveryTimeStart: newRequestData.deliveryTimeStart,
+      deliveryTimeEnd: newRequestData.deliveryTimeEnd,
+      unloadingEquipment: newRequestData.unloadingEquipment
     })
 
     await loadRequests()
@@ -169,22 +193,19 @@ const handleCreate = async (newRequestData) => {
   }
 }
 
-/* --- ЛОГИКА ОТЛОЖЕННОГО УДАЛЕНИЯ (TELEGRAM UNDO) --- */
-
-// 1. Старт процесса удаления (карточка скрывается из списка)
+/* --- TELEGRAM UNDO DELETE --- */
 const initiateDelete = (item) => {
+  // Если у нас уже был кандидат на удаление, подтверждаем его перед запуском нового
   if (pendingDelete.value) {
     confirmDelete()
   }
   pendingDelete.value = item
 }
 
-// 2. Отмена удаления пользователем
 const cancelDelete = () => {
   pendingDelete.value = null
 }
 
-// 3. Подтверждение удаления (таймер истек)
 const confirmDelete = async () => {
   if (!pendingDelete.value) return
 

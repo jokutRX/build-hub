@@ -16,8 +16,11 @@
         "symfony/dotenv": "8.1.*",
         "symfony/flex": "^2.11",
         "symfony/framework-bundle": "8.1.*",
+        "symfony/property-access": "8.1.*",
         "symfony/routing": "8.1.*",
         "symfony/runtime": "8.1.*",
+        "symfony/serializer": "8.1.*",
+        "symfony/validator": "8.1.*",
         "symfony/yaml": "8.1.*"
     },
     "config": {
