@@ -1,214 +1,275 @@
-<script setup>
-import { ref } from 'vue'
-
-const emit = defineEmits(['create'])
-
-const title = ref('')
-const site = ref('ЖК Северный')
-const quantity = ref(100)
-const unit = ref('тонны')
-const priority = ref('medium')
-
-const handleSubmit = () => {
-  if (!title.value.trim() || !quantity.value) return
-
-  emit('create', {
-    title: title.value,
-    site: site.value,
-    quantity: Number(quantity.value),
-    unit: unit.value,
-    priority: priority.value
-  })
-
-  title.value = ''
-}
-</script>
-
 <template>
-  <form @submit.prevent="handleSubmit" class="supply-form">
+  <div class="form-container">
+    <!-- Шапка панели с кнопкой закрытия -->
     <div class="form-header">
-      <div class="header-icon">📦</div>
-      <div>
-        <h3>Создать заявку на закупку</h3>
-        <p>Укажите детали позиции и приоритет поставки на объект</p>
+      <div class="title-group">
+        <h3>Новая заявка на закупку</h3>
+        <p>Укажите детали позиции и приоритет поставки</p>
       </div>
+      <button class="btn-close" @click="$emit('close')" title="Закрыть">✕</button>
     </div>
 
-    <div class="form-grid">
-      <div class="field col-full">
-        <label>Наименование материала / оборудования</label>
-        <input 
-          v-model="title" 
-          type="text" 
-          placeholder="Например: Арматура А500С 12мм" 
-          required 
-        />
-      </div>
+    <!-- Тело формы -->
+    <form @submit.prevent="handleSubmit" class="form-body">
+      <div class="form-fields-wrapper">
+        <!-- Наименование -->
+        <div class="form-field">
+          <label>НАИМЕНОВАНИЕ МАТЕРИАЛА / ОБОРУДОВАНИЯ</label>
+          <input 
+            v-model="form.title" 
+            type="text" 
+            placeholder="Например: Арматура А500С 12мм" 
+            required 
+          />
+        </div>
 
-      <div class="field">
-        <label>Объект / Площадка</label>
-        <select v-model="site">
-          <option value="ЖК Северный">ЖК Северный</option>
-          <option value="ЖК Невский">ЖК Невский</option>
-          <option value="БЦ Горизонт">БЦ Горизонт</option>
-        </select>
-      </div>
+        <!-- Объект -->
+        <div class="form-field">
+          <label>ОБЪЕКТ / ПЛОЩАДКА</label>
+          <select v-model="form.object">
+            <option value="ЖК Северный">ЖК Северный</option>
+            <option value="ЖК Южный">ЖК Южный</option>
+            <option value="ТЦ Центральный">ТЦ Центральный</option>
+          </select>
+        </div>
 
-      <div class="field">
-        <label>Количество</label>
-        <input 
-          v-model="quantity" 
-          type="number" 
-          step="0.1" 
-          min="0.1" 
-          required 
-        />
-      </div>
+        <!-- Количество и Ед. измерения -->
+        <div class="form-row">
+          <div class="form-field">
+            <label>КОЛИЧЕСТВО</label>
+            <input 
+              v-model.number="form.amount" 
+              type="number" 
+              step="0.1" 
+              class="input-no-spinner"
+              required 
+            />
+          </div>
+          <div class="form-field">
+            <label>ЕД. ИЗМЕРЕНИЯ</label>
+            <select v-model="form.unit">
+              <option value="тонны">тонны</option>
+              <option value="шт">шт</option>
+              <option value="м²">м²</option>
+              <option value="м³">м³</option>
+            </select>
+          </div>
+        </div>
 
-      <div class="field">
-        <label>Ед. измерения</label>
-        <select v-model="unit">
-          <option value="тонны">тонны</option>
-          <option value="шт">шт</option>
-          <option value="м3">м³</option>
-          <option value="м2">м²</option>
-          <option value="п.м.">п.м.</option>
-        </select>
-      </div>
-
-      <div class="field col-full">
-        <label>Приоритет снабжения</label>
-        <div class="priority-selector">
-          <label class="priority-btn low" :class="{ active: priority === 'low' }">
-            <input type="radio" value="low" v-model="priority" />
-            <span class="dot"></span> Низкий
-          </label>
-          <label class="priority-btn medium" :class="{ active: priority === 'medium' }">
-            <input type="radio" value="medium" v-model="priority" />
-            <span class="dot"></span> Средний
-          </label>
-          <label class="priority-btn critical" :class="{ active: priority === 'critical' }">
-            <input type="radio" value="critical" v-model="priority" />
-            <span class="dot"></span> Критичный
-          </label>
+        <!-- Приоритет -->
+        <div class="form-field">
+          <label>ПРИОРИТЕТ СНАБЖЕНИЯ</label>
+          <div class="priority-selector">
+            <button 
+              type="button"
+              :class="['priority-btn', 'low', { active: form.priority === 'LOW' }]"
+              @click="form.priority = 'LOW'"
+            >
+              ● НИЗКИЙ
+            </button>
+            <button 
+              type="button"
+              :class="['priority-btn', 'medium', { active: form.priority === 'MEDIUM' }]"
+              @click="form.priority = 'MEDIUM'"
+            >
+              ● СРЕДНИЙ
+            </button>
+            <button 
+              type="button"
+              :class="['priority-btn', 'critical', { active: form.priority === 'CRITICAL' }]"
+              @click="form.priority = 'CRITICAL'"
+            >
+              ● КРИТИЧНЫЙ
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="form-actions">
-      <button type="submit" class="btn-primary">
-        + Добавить в реестр
-      </button>
-    </div>
-  </form>
+      <!-- Кнопки действий всегда прижаты к низу -->
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" @click="$emit('close')">
+          Отмена
+        </button>
+        <button type="submit" class="btn-submit">
+          + Добавить в реестр
+        </button>
+      </div>
+    </form>
+  </div>
 </template>
+
+<script setup>
+import { reactive } from 'vue'
+
+const emit = defineEmits(['create', 'close'])
+
+const form = reactive({
+  title: '',
+  object: 'ЖК Северный',
+  amount: 100,
+  unit: 'тонны',
+  priority: 'MEDIUM'
+})
+
+const handleSubmit = () => {
+  emit('create', { ...form })
+  form.title = ''
+  form.amount = 100
+  form.priority = 'MEDIUM'
+}
+</script>
 
 <style lang="scss" scoped>
 @use "sass:color";
 @use "../styles/main.scss" as *;
 
-.supply-form {
-  background: $surface;
-  border: 1px solid $border;
-  border-radius: 16px;
-  padding: 1.75rem;
-  margin-bottom: 2.5rem;
-  @include card-shadow;
+.form-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 
   .form-header {
     display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid $border;
+    flex-shrink: 0;
 
-    .header-icon {
-      font-size: 1.5rem;
-      background: $primary-light;
-      width: 44px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 12px;
+    .title-group {
+      h3 { font-size: 1.2rem; font-weight: 800; color: $text-main; margin: 0; }
+      p { font-size: 0.85rem; color: $text-muted; margin: 0.25rem 0 0 0; }
     }
 
-    h3 { margin: 0; font-size: 1.15rem; font-weight: 600; color: $text-main; }
-    p { margin: 0.15rem 0 0 0; font-size: 0.85rem; color: $text-muted; }
+    .btn-close {
+      background: transparent;
+      border: none;
+      font-size: 1.25rem;
+      color: $text-muted;
+      cursor: pointer;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      &:hover { background: #f1f5f9; color: $text-main; }
+    }
   }
 
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
+  .form-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    padding-top: 1.5rem;
+    overflow: hidden; /* Ограничиваем контент для красивого прижатия кнопок */
 
-    .col-full { grid-column: span 3; }
+    .form-fields-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      overflow-y: auto; /* Внутренний скролл только для полей, если экран очень маленький */
+      padding-right: 0.25rem;
+    }
 
-    .field {
+    .form-field {
       display: flex;
       flex-direction: column;
       gap: 0.4rem;
 
-      label { 
-        font-size: 0.75rem; 
-        font-weight: 700; 
-        color: $text-muted; 
-        text-transform: uppercase; 
-        letter-spacing: 0.04em; 
+      label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: $text-muted;
+        letter-spacing: 0.05em;
       }
 
-      input, select { @include input-base; }
+      input, select {
+        padding: 0.65rem 0.85rem;
+        border: 1px solid $border;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color 0.2s;
+        &:focus { border-color: $primary; }
+      }
+
+      /* Скрытие стрелочек спиннера у инпута типа number */
+      .input-no-spinner {
+        -moz-appearance: textfield;
+        &::-webkit-outer-spin-button,
+        &::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+      }
     }
-  }
 
-  .priority-selector {
-    display: flex;
-    gap: 0.75rem;
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
 
-    .priority-btn {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .priority-selector {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 0.5rem;
-      padding: 0.65rem;
-      border: 1px solid $border;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.875rem;
-      font-weight: 500;
-      transition: all 0.2s;
 
-      input { display: none; }
-      .dot { width: 8px; height: 8px; border-radius: 50%; }
+      .priority-btn {
+        padding: 0.6rem 0.4rem;
+        border: 1px solid $border;
+        background: #fff;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
 
-      &.low { .dot { background: $low; } }
-      &.medium { .dot { background: $medium; } }
-      &.critical { .dot { background: $critical; } }
-
-      &.active.low { background: $low-bg; border-color: $low-border; color: color.adjust($low, $lightness: -15%); }
-      &.active.medium { background: $medium-bg; border-color: $medium-border; color: color.adjust($medium, $lightness: -15%); }
-      &.active.critical { background: $critical-bg; border-color: $critical-border; color: color.adjust($critical, $lightness: -10%); }
+        &.low {
+          color: #16a34a;
+          &.active { background: #f0fdf4; border-color: #22c55e; }
+        }
+        &.medium {
+          color: #d97706;
+          &.active { background: #fefce8; border-color: #eab308; }
+        }
+        &.critical {
+          color: #dc2626;
+          &.active { background: #fef2f2; border-color: #ef4444; }
+        }
+      }
     }
-  }
 
-  .form-actions {
-    margin-top: 1.5rem;
-    display: flex;
-    justify-content: flex-end;
+    /* Фиксированная футер-зона с кнопками */
+    .form-actions {
+      padding-top: 1.25rem;
+      margin-top: 1.25rem;
+      border-top: 1px solid $border;
+      display: flex;
+      gap: 0.75rem;
+      flex-shrink: 0;
 
-    .btn-primary {
-      background: $primary;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.75rem;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
+      .btn-cancel {
+        flex: 1;
+        padding: 0.75rem;
+        background: #f1f5f9;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        color: $text-muted;
+        cursor: pointer;
+        &:hover { background: #e2e8f0; }
+      }
 
-      &:hover { background: $primary-hover; }
-      &:active { transform: scale(0.98); }
+      .btn-submit {
+        flex: 2;
+        padding: 0.75rem;
+        background: $primary;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        &:hover { background: color.adjust(#2563eb, $lightness: -5%); }
+      }
     }
   }
 }

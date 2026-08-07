@@ -26,16 +26,28 @@ class SupplyRequestController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        if (empty($data['title']) || empty($data['site']) || empty($data['quantity'])) {
-            return $this->json(['error' => 'Заполните обязательные поля'], Response::HTTP_BAD_REQUEST);
+        if (!is_array($data)) {
+            return $this->json(['error' => 'Некорректный формат JSON'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Поддерживаем ключи и со стороны Symfony (site, quantity), и со стороны Vue (object, amount)
+        $title    = $data['title'] ?? null;
+        $site     = $data['site'] ?? $data['object'] ?? null;
+        $quantity = $data['quantity'] ?? $data['amount'] ?? null;
+
+        // Проверка заполнения обязательных полей
+        if (empty($title) || empty($site) || empty($quantity)) {
+            return $this->json([
+                'error' => 'Заполните обязательные поля (наименование, объект и количество)'
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $supplyRequest = new SupplyRequest();
-        $supplyRequest->setTitle($data['title']);
-        $supplyRequest->setSite($data['site']);
-        $supplyRequest->setQuantity((float) $data['quantity']);
+        $supplyRequest->setTitle($title);
+        $supplyRequest->setSite($site);
+        $supplyRequest->setQuantity((float) $quantity);
         $supplyRequest->setUnit($data['unit'] ?? 'шт');
-        $supplyRequest->setPriority($data['priority'] ?? 'medium');
+        $supplyRequest->setPriority($data['priority'] ?? 'MEDIUM');
 
         $em->persist($supplyRequest);
         $em->flush();
