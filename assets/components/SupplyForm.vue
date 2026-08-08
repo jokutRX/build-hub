@@ -10,11 +10,13 @@
       <div class="form-group">
         <label>Наименование материала / оборудования *</label>
         <input 
+          ref="titleInput"
           type="text" 
           v-model.trim="form.title" 
           placeholder="Например: Бетон М300" 
           required 
-          class="form-input" 
+          class="form-input"
+          @keyup.enter="handleSubmit"
         />
       </div>
 
@@ -26,7 +28,8 @@
           v-model.trim="form.object" 
           placeholder="Например: ТЦ Центральный" 
           required 
-          class="form-input" 
+          class="form-input"
+          @keyup.enter="handleSubmit"
         />
       </div>
 
@@ -40,13 +43,14 @@
             min="0.1" 
             step="any" 
             required 
-            class="form-input no-spinners" 
+            class="form-input no-spinners"
+            @keyup.enter="handleSubmit"
           />
         </div>
 
         <div class="form-group">
           <label>Ед. измерения</label>
-          <select v-model="form.unit" class="form-select">
+          <select v-model="form.unit" class="form-select" @keyup.enter="handleSubmit">
             <option value="тонны">тонны</option>
             <option value="шт">шт</option>
             <option value="м³">м³</option>
@@ -59,7 +63,7 @@
       <!-- Приоритет -->
       <div class="form-group">
         <label>Приоритет</label>
-        <select v-model="form.priority" class="form-select">
+        <select v-model="form.priority" class="form-select" @keyup.enter="handleSubmit">
           <option value="CRITICAL">Критичный</option>
           <option value="MEDIUM">Средний</option>
           <option value="LOW">Низкий</option>
@@ -74,7 +78,8 @@
             type="time" 
             v-model="form.deliveryTimeStart" 
             step="60"
-            class="form-input" 
+            class="form-input"
+            @keyup.enter="handleSubmit"
           />
         </div>
 
@@ -84,7 +89,8 @@
             type="time" 
             v-model="form.deliveryTimeEnd" 
             step="60"
-            :class="['form-input', { 'input-error': !!timeError }]" 
+            :class="['form-input', { 'input-error': !!timeError }]"
+            @keyup.enter="handleSubmit"
           />
         </div>
       </div>
@@ -114,9 +120,15 @@
 </template>
 
 <script setup>
-import { reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 
 const emit = defineEmits(['create', 'close'])
+
+const titleInput = ref(null)
+
+onMounted(() => {
+  titleInput.value?.focus()
+})
 
 const initialForm = {
   title: '',
