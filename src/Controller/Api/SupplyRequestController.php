@@ -63,7 +63,7 @@ class SupplyRequestController extends AbstractController
             $errorMessages['deliveryTimeEnd'] = $timeError;
         }
 
-        // Если есть хоть одна ошибка — отдаем $400$
+        // Если есть хоть одна ошибка — отдаем 400
         if (!empty($errorMessages)) {
             return $this->json(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
         }
@@ -81,6 +81,7 @@ class SupplyRequestController extends AbstractController
         $supplyRequest->setDeliveryTimeStart($dto->deliveryTimeStart);
         $supplyRequest->setDeliveryTimeEnd($dto->deliveryTimeEnd);
         $supplyRequest->setUnloadingEquipment($logistics['unloadingEquipment']);
+        $supplyRequest->setCalculationResult($logistics['calculationResult'] ?? null);
 
         $em->persist($supplyRequest);
         $em->flush();

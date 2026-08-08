@@ -22,7 +22,7 @@ class SupplyCalculationService
      */
     public function processLogistics(CreateSupplyRequestDto $dto): array
     {
-        $weightInTons = $this->calculateWeightInTons($dto->title, $dto->quantity, $dto->unit);
+        $weightInTons = $this->calculateWeightInTons($dto->title, (float)$dto->quantity, $dto->unit);
 
         // Авто-определение потребности в спецтехнике, если значение явно не передано
         $unloadingValue = $dto->unloadingEquipment;
@@ -32,9 +32,34 @@ class SupplyCalculationService
             $unloadingValue = $unloadingValue ? 'Да' : 'Нет';
         }
 
+        // Расчет рекомендуемой техники и количества рейсов
+        $recommendedMachinery = 'Малотоннажный транспорт (Газель / ГАЗ)';
+        $tripsCount = 1;
+
+        if ($weightInTons > 0) {
+            if ($weightInTons > 20) {
+                $recommendedMachinery = 'Тяжелый самосвал 25т / Тонар';
+                $tripsCount = (int) ceil($weightInTons / 25);
+            } elseif ($weightInTons > 10) {
+                $recommendedMachinery = 'Самосвал КАМАЗ 20т';
+                $tripsCount = (int) ceil($weightInTons / 20);
+            } elseif ($weightInTons >= 3.5) {
+                $recommendedMachinery = 'Самосвал 10т / МАЗ';
+                $tripsCount = (int) ceil($weightInTons / 10);
+            }
+        }
+
         return [
             'unloadingEquipment' => (string) $unloadingValue,
             'calculatedWeightTons' => round($weightInTons, 2),
+            'calculationResult' => [
+                'calculatedAmount' => round($weightInTons, 2),
+                'recommendedMachinery' => $recommendedMachinery,
+                'tripsCount' => $tripsCount,
+                'note' => $weightInTons > 0 
+                    ? sprintf('Расчётный вес: ~%.2f тонн. Требуется %d рейс(ов).', $weightInTons, $tripsCount)
+                    : 'Штучный груз / стандартная доставка'
+            ]
         ];
     }
 

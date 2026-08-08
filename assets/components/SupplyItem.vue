@@ -1,5 +1,5 @@
 <template>
-  <div :class="['supply-card', { expanded: isExpanded }]">
+  <div :class="['supply-card', { expanded: isExpanded, 'pending-delete': isPendingDelete }]">
     <!-- Шапка карточки (Кликабельная) -->
     <div class="card-header" @click="toggleExpand">
       <div class="header-left">
@@ -43,6 +43,36 @@
             <span class="value">{{ formattedDate }}</span>
           </div>
         </div>
+
+        <!-- БЛОК РАСЧЕТОВ БЭКЕНДА (SupplyCalculationService) -->
+        <div v-if="hasCalculationData" class="calculation-section">
+          <div class="calc-header">
+            <span class="calc-icon">⚙️</span>
+            <span class="calc-title">Автоматический расчёт снабжения</span>
+          </div>
+
+          <div class="calc-grid">
+            <div class="calc-item" v-if="calcData.calculatedAmount">
+              <span class="label">Рассчитанный объем:</span>
+              <span class="value accent">{{ calcData.calculatedAmount }}</span>
+            </div>
+
+            <div class="calc-item" v-if="calcData.recommendedMachinery">
+              <span class="label">Рекомендуемая техника:</span>
+              <span class="value">{{ calcData.recommendedMachinery }}</span>
+            </div>
+
+            <div class="calc-item" v-if="calcData.tripsCount">
+              <span class="label">Количество рейсов:</span>
+              <span class="value">{{ calcData.tripsCount }}</span>
+            </div>
+
+            <div class="calc-item full-width" v-if="calcData.note || calcData.comment">
+              <span class="label">Примечание по логистике:</span>
+              <span class="value note">{{ calcData.note || calcData.comment }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </Transition>
   </div>
@@ -53,7 +83,8 @@ import { ref, computed } from 'vue'
 import { formatDate, formatUnit } from '../utils/formatters.js'
 
 const props = defineProps({
-  item: { type: Object, required: true }
+  item: { type: Object, required: true },
+  isPendingDelete: { type: Boolean, default: false }
 })
 
 defineEmits(['delete'])
@@ -89,6 +120,22 @@ const formatPriority = (p) => {
   const map = { CRITICAL: 'Критичный', MEDIUM: 'Средний', LOW: 'Низкий' }
   return map[p] || p
 }
+
+// Извлечение посчитанных данных из ответа бэкенда
+const calcData = computed(() => {
+  const c = props.item.calculation || props.item.calculationResult || props.item
+  return {
+    calculatedAmount: c.calculatedAmount || c.calculated_amount ? formatUnit(c.calculatedAmount || c.calculated_amount, props.item.unit || 'т') : null,
+    recommendedMachinery: c.recommendedMachinery || c.recommended_machinery || c.machinery || null,
+    tripsCount: c.tripsCount || c.trips_count || c.trips ? `${c.tripsCount || c.trips_count || c.trips} рейса(ов)` : null,
+    note: c.note || c.calcNote || c.logistics_note || null,
+    comment: c.comment || null
+  }
+})
+
+const hasCalculationData = computed(() => {
+  return Object.values(calcData.value).some(val => val !== null && val !== undefined)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -98,7 +145,12 @@ const formatPriority = (p) => {
   border-radius: 10px;
   margin-bottom: 0.75rem;
   overflow: hidden;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+
+  &.pending-delete {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 
   &:hover {
     border-color: #cbd5e1;
@@ -215,6 +267,72 @@ const formatPriority = (p) => {
         }
       }
     }
+
+    /* СТИЛИ ДЛЯ БЛОКА АВТОРАСЧЕТА */
+    .calculation-section {
+      margin-top: 1rem;
+      padding-top: 0.85rem;
+      border-top: 1px dashed #cbd5e1;
+
+      .calc-header {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-bottom: 0.6rem;
+
+        .calc-icon {
+          font-size: 0.85rem;
+        }
+
+        .calc-title {
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          color: #2563eb;
+        }
+      }
+
+      .calc-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.8rem;
+
+        .calc-item {
+          display: flex;
+          flex-direction: column;
+          gap: 0.15rem;
+
+          &.full-width {
+            grid-column: 1 / -1;
+          }
+
+          .label {
+            font-size: 0.725rem;
+            color: #64748b;
+            font-weight: 600;
+          }
+
+          .value {
+            font-size: 0.85rem;
+            color: #1e293b;
+            font-weight: 600;
+
+            &.accent {
+              color: #2563eb;
+              font-weight: 700;
+            }
+
+            &.note {
+              font-size: 0.8rem;
+              color: #475569;
+              font-style: italic;
+              font-weight: 400;
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -222,7 +340,7 @@ const formatPriority = (p) => {
 .expand-enter-active,
 .expand-leave-active {
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  max-height: 200px;
+  max-height: 400px;
   opacity: 1;
   overflow: hidden;
 }

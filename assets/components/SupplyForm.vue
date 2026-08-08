@@ -118,7 +118,7 @@ import { reactive, computed } from 'vue'
 
 const emit = defineEmits(['create', 'close'])
 
-const form = reactive({
+const initialForm = {
   title: '',
   object: '',
   amount: 1,
@@ -127,7 +127,14 @@ const form = reactive({
   deliveryTimeStart: '09:00',
   deliveryTimeEnd: '12:00',
   unloadingEquipment: false
-})
+}
+
+const form = reactive({ ...initialForm })
+
+// Функция сброса формы к начальным значениям
+const resetForm = () => {
+  Object.assign(form, initialForm)
+}
 
 // Проверка корректности промежутка времени
 const timeError = computed(() => {
@@ -148,7 +155,8 @@ const isSubmitDisabled = computed(() => {
 
 const handleSubmit = () => {
   if (isSubmitDisabled.value) return
-  emit('create', { ...form })
+  // Передаем копию данных формы и колбэк для сброса
+  emit('create', { ...form }, resetForm)
 }
 </script>
 

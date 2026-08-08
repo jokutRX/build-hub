@@ -171,12 +171,14 @@ const formattedPositionsCount = computed(() => {
 })
 
 /* --- СОЗДАНИЕ ЗАЯВКИ --- */
-const handleCreate = async (newRequestData) => {
+const handleCreate = async (newRequestData, resetFormCallback) => {
   try {
     await supplyApi.create({
       title: newRequestData.title,
       site: newRequestData.object,
-      quantity: newRequestData.amount,
+      object: newRequestData.object,
+      quantity: Number(newRequestData.amount),
+      amount: Number(newRequestData.amount),
       unit: newRequestData.unit,
       priority: newRequestData.priority,
       deliveryTimeStart: newRequestData.deliveryTimeStart,
@@ -185,11 +187,18 @@ const handleCreate = async (newRequestData) => {
     })
 
     await loadRequests()
+    
+    // Сбрасываем форму и закрываем Drawer при успешном создании
+    if (typeof resetFormCallback === 'function') {
+      resetFormCallback()
+    }
     isFormOpen.value = false
+
     showToast('Заявка создана!', `Позиция "${newRequestData.title}" добавлена в реестр.`, 'success')
   } catch (err) {
     console.error('Ошибка создания:', err)
-    showToast('Ошибка сохранения', 'Не удалось сохранить заявку', 'error')
+    // Пробрасываем точечное сообщение об ошибке с бэкенда
+    showToast('Ошибка сохранения', err.message || 'Не удалось сохранить заявку', 'error')
   }
 }
 
@@ -216,7 +225,7 @@ const confirmDelete = async () => {
     await loadRequests()
   } catch (err) {
     console.error('Ошибка при удалении:', err)
-    showToast('Ошибка удаления', 'Не удалось удалить заявку с сервера', 'error')
+    showToast('Ошибка удаления', err.message || 'Не удалось удалить заявку с сервера', 'error')
     await loadRequests()
   } finally {
     if (pendingDelete.value?.id === itemToDelete.id) {

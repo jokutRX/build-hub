@@ -41,6 +41,11 @@ class SupplyRequest implements JsonSerializable
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $unloadingEquipment = null;
 
+    // --- РЕЗУЛЬТАТЫ РАСЧЕТА СО СНАБЖЕНИЯ ---
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $calculationResult = null;
+
     // ----------------------------------------
 
     #[ORM\Column]
@@ -79,6 +84,9 @@ class SupplyRequest implements JsonSerializable
     public function getUnloadingEquipment(): ?string { return $this->unloadingEquipment; }
     public function setUnloadingEquipment(?string $unloadingEquipment): static { $this->unloadingEquipment = $unloadingEquipment; return $this; }
 
+    public function getCalculationResult(): ?array { return $this->calculationResult; }
+    public function setCalculationResult(?array $calculationResult): static { $this->calculationResult = $calculationResult; return $this; }
+
     // ----------------------------------------
 
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
@@ -99,6 +107,7 @@ class SupplyRequest implements JsonSerializable
             'deliveryTimeStart' => $this->deliveryTimeStart,
             'deliveryTimeEnd' => $this->deliveryTimeEnd,
             'unloadingEquipment' => $this->unloadingEquipment,
+            'calculationResult' => $this->calculationResult,
             'createdAt' => $this->createdAt?->format(\DateTimeInterface::ATOM),
         ];
     }
