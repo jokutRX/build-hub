@@ -1,34 +1,12 @@
 <template>
   <aside :class="['app-sidebar', { collapsed: isCollapsed }]">
-    <!-- Header / Brand & Theme Switcher -->
+    <!-- Header / Brand -->
     <div class="sidebar-header">
       <div class="brand-wrapper">
-        <div class="brand-logo">
-          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 20h20M5 20V8l7-5 7 5v12M9 20v-6h6v6" />
-          </svg>
-        </div>
-        <div v-if="!isCollapsed" class="brand-info">
-          <span class="title">BuildHub</span>
-          <span class="env-tag">ERP</span>
-        </div>
+        <transition name="fade">
+          <span v-if="!isCollapsed" class="menu-label">Меню</span>
+        </transition>
       </div>
-
-      <!-- Theme Switcher next to logo -->
-      <button 
-        class="theme-switch-btn" 
-        @click="toggleTheme"
-        :title="themeTooltip"
-        :aria-label="themeTooltip"
-      >
-        <svg v-if="!isDark" class="theme-icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="5" />
-          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-        </svg>
-        <svg v-else class="theme-icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-        </svg>
-      </button>
     </div>
 
     <!-- Navigation -->
@@ -48,23 +26,30 @@
     </nav>
 
     <!-- Toggle Button -->
-    <button class="toggle-btn" @click="isCollapsed = !isCollapsed" title="Свернуть/Развернуть">
+    <button class="toggle-btn" @click="toggleSidebar">
       <svg class="toggle-icon" :class="{ rotated: isCollapsed }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M15 18l-6-6 6-6" />
+      </svg>
+    </button>
+    <!-- Toggle Button -->
+    <button class="toggle-btn" @click="toggleSidebar">
+      <svg class="toggle-icon" :class="{ rotated: isCollapsed }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M13 17l5-5-5-5M6 17l5-5-5-5" />
       </svg>
     </button>
   </aside>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useTheme } from '../composables/useTheme.js'
-
-const { isDark, toggleTheme } = useTheme()
+import { ref } from 'vue'
 
 const isCollapsed = ref(false)
 
-const themeTooltip = computed(() => isDark.value ? 'Переключить на светлую тему' : 'Переключить на тёмную тему')
+const toggleSidebar = () => {
+  isCollapsed.value = !isCollapsed.value
+}
+
+defineExpose({ toggleSidebar })
 </script>
 
 <style lang="scss" scoped>
@@ -107,84 +92,32 @@ const themeTooltip = computed(() => isDark.value ? 'Переключить на 
   /* 1. ЛОГОТИП И ШАПКА */
   .sidebar-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    height: 40px;
     margin-bottom: var(--space-8);
-    padding: 0 var(--space-1);
-    height: 32px;
+    padding: 0 var(--space-2);
 
     .brand-wrapper {
       display: flex;
       align-items: center;
-      gap: var(--space-3);
-    }
+      height: 100%;
 
-    .brand-logo {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--color-primary);
-
-      .logo-icon {
-        width: 24px;
-        height: 24px;
-      }
-    }
-
-    .brand-info {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      white-space: nowrap;
-
-      .title {
+      .menu-label {
+        font-size: 0.75rem;
         font-weight: 800;
-        font-size: 1.1rem;
-        color: var(--color-text-main);
-        letter-spacing: -0.02em;
-      }
-
-      .env-tag {
-        font-size: 0.6rem;
         text-transform: uppercase;
-        background: var(--color-primary-light);
-        color: var(--color-primary);
-        padding: var(--space-1) var(--space-1);
-        border-radius: var(--radius-xs);
-        font-weight: 700;
+        color: var(--color-text-muted);
+        letter-spacing: 0.1em;
+        white-space: nowrap;
       }
     }
+  }
 
-    .theme-switch-btn {
-      background: transparent;
-      border: 1px solid var(--color-border);
-      color: var(--color-text-secondary);
-      width: 32px;
-      height: 32px;
-      border-radius: var(--radius-md);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: all var(--transition-fast);
-
-      .theme-icon {
-        width: 18px;
-        height: 18px;
-      }
-
-      &:hover {
-        background: var(--color-bg-secondary);
-        border-color: var(--color-border-strong);
-        color: var(--color-text-main);
-      }
-
-      &:focus-visible {
-        outline: none;
-        box-shadow: 0 0 0 2px var(--color-primary-light);
-      }
-    }
+  .fade-enter-active, .fade-leave-active {
+    transition: opacity 0.2s ease;
+  }
+  .fade-enter-from, .fade-leave-to {
+    opacity: 0;
   }
 
   /* 2. НАВИГАЦИЯ */
@@ -249,19 +182,24 @@ const themeTooltip = computed(() => isDark.value ? 'Переключить на 
     }
   }
 
-  /* 3. КНОПКА СВЕРНУТЬ */
+  /* 3. КНОПКА СВЕРНУТЬ (Теперь фиксированная внизу) */
   .toggle-btn {
-    background: transparent;
+    position: absolute;
+    bottom: var(--space-5);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
     color: var(--color-text-muted);
-    border-radius: var(--radius-sm);
-    padding: var(--space-1);
+    border-radius: var(--radius-full);
+    padding: var(--space-2);
     cursor: pointer;
-    align-self: flex-end;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all var(--transition-fast);
+    z-index: 10;
+    box-shadow: var(--shadow-sm);
 
     .toggle-icon {
       width: 16px;

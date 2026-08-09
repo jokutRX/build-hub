@@ -240,130 +240,135 @@ onMounted(loadRequests)
 <style lang="scss" scoped>
 @use "../styles/main.scss" as *;
 
-.page-container {
-  max-width: 960px;
-  margin: 0 auto;
+  .page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-6);
 
-  .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: var(--space-8);
-
-    .header-text {
-      h1 { font-size: 1.5rem; font-weight: 800; color: var(--color-text-main); margin: 0; }
-      p { color: var(--color-text-muted); font-size: 0.9rem; margin: var(--space-1) 0 0 0; }
-    }
-
-    .btn-create-primary {
-      background: var(--color-primary);
-      color: var(--color-primary-contrast);
-      border: none;
-      padding: var(--space-2) var(--space-5);
-      border-radius: var(--radius-md);
-      font-weight: 700;
-      font-size: 0.9rem;
+    .page-header {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: var(--space-2);
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(var(--color-primary-rgb), 0.25);
-      transition: all var(--transition-base);
+      margin-bottom: var(--space-10);
 
-      .btn-icon { width: 18px; height: 18px; }
+      .header-text {
+        h1 { font-size: 1.8rem; font-weight: 800; color: var(--color-text-main); margin: 0; }
+        p { color: var(--color-text-muted); font-size: 1rem; margin: var(--space-2) 0 0 0; }
+      }
 
-      &:hover {
-        background: var(--color-primary-hover);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.35);
+      .btn-create-primary {
+        background: var(--color-primary);
+        color: var(--color-primary-contrast);
+        border: none;
+        padding: var(--space-3) var(--space-6);
+        border-radius: var(--radius-lg);
+        font-weight: 700;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.25);
+        transition: all var(--transition-base);
+
+        .btn-icon { width: 20px; height: 20px; }
+
+        &:hover {
+          background: var(--color-primary-hover);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.35);
+        }
       }
     }
-  }
 
-  .registry-section {
-    .registry-header {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
-      margin-bottom: var(--space-5);
+    .registry-section {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
 
-      .title-wrap {
-        h2 { font-size: 1.25rem; font-weight: 800; color: var(--color-text-main); margin: 0; }
-      }
-
-      .filters-bar {
+      .registry-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: var(--space-5);
-        background: var(--color-surface);
-        padding: var(--space-3) var(--space-5);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
+        gap: var(--space-6);
+        margin-bottom: var(--space-6);
 
-        .filter-controls {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          gap: var(--space-5);
+        .title-wrap {
+          h2 { font-size: 1.5rem; font-weight: 800; color: var(--color-text-main); margin: 0; }
         }
 
-        .filter-group {
+        .filters-bar {
           display: flex;
           align-items: center;
-          gap: var(--space-2);
+          gap: var(--space-6);
+          background: var(--color-bg-secondary);
+          padding: var(--space-2) var(--space-4);
+          border-radius: var(--radius-lg);
 
-          label { font-size: 0.8rem; font-weight: 700; color: var(--color-text-muted); }
+          .filter-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: var(--space-4);
+          }
 
-          .filter-input, .filter-select {
-            padding: var(--space-1) var(--space-2);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-sm);
+          .filter-group {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+
+            label { font-size: 0.85rem; font-weight: 700; color: var(--color-text-muted); }
+
+            .filter-input, .filter-select {
+              padding: var(--space-2) var(--space-3);
+              border: 1px solid var(--color-border);
+              border-radius: var(--radius-md);
+              font-size: 0.9rem;
+              outline: none;
+              color: var(--color-text-main);
+              background: var(--color-surface);
+              transition: all var(--transition-fast);
+
+              &:focus { 
+                border-color: var(--color-primary);
+                box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.1);
+              }
+            }
+
+            .btn-quick-date {
+              background: var(--color-surface);
+              border: 1px solid var(--color-border);
+              padding: var(--space-2) var(--space-4);
+              border-radius: var(--radius-md);
+              font-size: 0.85rem;
+              font-weight: 600;
+              color: var(--color-text-muted);
+              cursor: pointer;
+              transition: all var(--transition-fast);
+
+              &:hover { background: var(--color-bg-secondary); border-color: var(--color-text-muted); }
+              &.active { 
+                background: var(--color-primary); 
+                color: var(--color-primary-contrast); 
+                border-color: var(--color-primary);
+              }
+            }
+          }
+
+          .count-badge {
+            background: var(--color-primary-light);
+            color: var(--color-primary);
             font-size: 0.85rem;
-            outline: none;
-            color: var(--color-text-main);
-            background: var(--color-surface);
-            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-
-            &:focus { 
-              border-color: var(--color-border-focus);
-              box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.15);
-            }
+            font-weight: 700;
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-full);
+            white-space: nowrap;
           }
-
-          .btn-quick-date {
-            background: var(--color-bg-secondary);
-            border: none;
-            padding: var(--space-1) var(--space-3);
-            border-radius: var(--radius-sm);
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--color-text-muted);
-            cursor: pointer;
-            transition: all var(--transition-fast);
-
-            &:hover { background: var(--color-bg-tertiary); }
-            &.active { 
-              background: var(--color-primary); 
-              color: var(--color-primary-contrast); 
-            }
-          }
-        }
-
-        .count-badge {
-          margin-left: auto;
-          background: var(--color-primary-light);
-          color: var(--color-primary);
-          font-size: 0.8rem;
-          font-weight: 700;
-          padding: var(--space-1) var(--space-3);
-          border-radius: var(--radius-full);
-          white-space: nowrap;
         }
       }
     }
   }
-}
 
 /* Стили выкатной панели Drawer */
 .drawer-overlay {
