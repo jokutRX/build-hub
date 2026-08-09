@@ -1,16 +1,34 @@
 <template>
   <aside :class="['app-sidebar', { collapsed: isCollapsed }]">
-    <!-- Header / Brand -->
+    <!-- Header / Brand & Theme Switcher -->
     <div class="sidebar-header">
-      <div class="brand-logo">
-        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M2 20h20M5 20V8l7-5 7 5v12M9 20v-6h6v6" />
+      <div class="brand-wrapper">
+        <div class="brand-logo">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 20h20M5 20V8l7-5 7 5v12M9 20v-6h6v6" />
+          </svg>
+        </div>
+        <div v-if="!isCollapsed" class="brand-info">
+          <span class="title">BuildHub</span>
+          <span class="env-tag">ERP</span>
+        </div>
+      </div>
+
+      <!-- Theme Switcher next to logo -->
+      <button 
+        class="theme-switch-btn" 
+        @click="toggleTheme"
+        :title="themeTooltip"
+        :aria-label="themeTooltip"
+      >
+        <svg v-if="!isDark" class="theme-icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5" />
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
         </svg>
-      </div>
-      <div v-if="!isCollapsed" class="brand-info">
-        <span class="title">BuildHub</span>
-        <span class="env-tag">ERP</span>
-      </div>
+        <svg v-else class="theme-icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      </button>
     </div>
 
     <!-- Navigation -->
@@ -28,25 +46,6 @@
         </router-link>
       </div>
     </nav>
-
-    <!-- Theme Toggle -->
-    <div v-if="!isCollapsed" class="theme-toggle-section">
-      <div class="theme-toggle-label">Тема</div>
-      <button 
-        class="theme-toggle-btn" 
-        @click="toggleTheme"
-        :title="themeTooltip"
-        :aria-label="themeTooltip"
-      >
-        <svg v-if="!isDark" class="theme-icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="5" />
-          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-        </svg>
-        <svg v-else class="theme-icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-        </svg>
-      </button>
-    </div>
 
     <!-- Toggle Button -->
     <button class="toggle-btn" @click="isCollapsed = !isCollapsed" title="Свернуть/Развернуть">
@@ -88,7 +87,10 @@ const themeTooltip = computed(() => isDark.value ? 'Переключить на 
     width: 72px;
 
     .sidebar-header {
-      justify-content: center;
+      flex-direction: column;
+      gap: var(--space-2);
+      align-items: center;
+      height: auto;
       padding: 0;
     }
 
@@ -106,10 +108,16 @@ const themeTooltip = computed(() => isDark.value ? 'Переключить на 
   .sidebar-header {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    justify-content: space-between;
     margin-bottom: var(--space-8);
-    padding: 0 var(--space-2);
+    padding: 0 var(--space-1);
     height: 32px;
+
+    .brand-wrapper {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
 
     .brand-logo {
       display: flex;
@@ -127,7 +135,7 @@ const themeTooltip = computed(() => isDark.value ? 'Переключить на 
       display: flex;
       align-items: center;
       gap: var(--space-2);
-      white-space: nowrap; /* Фикс переноса текста */
+      white-space: nowrap;
 
       .title {
         font-weight: 800;
@@ -144,6 +152,37 @@ const themeTooltip = computed(() => isDark.value ? 'Переключить на 
         padding: var(--space-1) var(--space-1);
         border-radius: var(--radius-xs);
         font-weight: 700;
+      }
+    }
+
+    .theme-switch-btn {
+      background: transparent;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-secondary);
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all var(--transition-fast);
+
+      .theme-icon {
+        width: 18px;
+        height: 18px;
+      }
+
+      &:hover {
+        background: var(--color-bg-secondary);
+        border-color: var(--color-border-strong);
+        color: var(--color-text-main);
+      }
+
+      &:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--color-primary-light);
       }
     }
   }
@@ -175,13 +214,13 @@ const themeTooltip = computed(() => isDark.value ? 'Переключить на 
       font-weight: 600;
       font-size: 0.875rem;
       transition: all var(--transition-fast);
-      white-space: nowrap; /* КЛЮЧЕВОЙ ФИКС: Запрещает скачки текста в 2 строки */
-      overflow: hidden;    /* Прячет вылезающий текст при схлопывании */
+      white-space: nowrap;
+      overflow: hidden;
 
       .nav-icon {
         width: 20px;
         height: 20px;
-        min-width: 20px; /* Чтобы иконка не сжималась */
+        min-width: 20px;
         stroke: var(--color-text-muted);
         transition: stroke var(--transition-fast);
       }
@@ -199,7 +238,6 @@ const themeTooltip = computed(() => isDark.value ? 'Переключить на 
         }
       }
 
-      /* Активное состояние маршрута */
       &.router-link-active {
         background: var(--color-primary);
         color: var(--color-primary-contrast);
@@ -239,56 +277,6 @@ const themeTooltip = computed(() => isDark.value ? 'Переключить на 
       background: var(--color-bg-secondary);
       color: var(--color-text-main);
       border-color: var(--color-border-strong);
-    }
-  }
-
-  /* 4. THEME TOGGLE */
-  .theme-toggle-section {
-    margin-top: auto;
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--color-border);
-
-    .theme-toggle-label {
-      font-size: 0.65rem;
-      font-weight: 800;
-      color: var(--color-text-muted);
-      letter-spacing: 0.08em;
-      margin-bottom: var(--space-2);
-      padding-left: var(--space-2);
-    }
-
-    .theme-toggle-btn {
-      width: 100%;
-      height: 40px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--color-border);
-      background: var(--color-surface);
-      color: var(--color-text-secondary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-3);
-      padding: 0 var(--space-3);
-      cursor: pointer;
-      transition: all var(--transition-fast);
-
-      .theme-icon {
-        width: 20px;
-        height: 20px;
-        stroke: currentColor;
-        transition: transform var(--transition-base), opacity var(--transition-base);
-      }
-
-      &:hover {
-        background: var(--color-bg-secondary);
-        border-color: var(--color-border-strong);
-        color: var(--color-text-main);
-      }
-
-      &:focus-visible {
-        outline: none;
-        box-shadow: 0 0 0 3px var(--color-primary-light);
-      }
     }
   }
 }
