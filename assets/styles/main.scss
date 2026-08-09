@@ -4,14 +4,107 @@
 // 🎨 DESIGN SYSTEM - CSS CUSTOM PROPERTIES (Light & Dark)
 // ==========================================
 
-:root {
-  // ===== LIGHT THEME (DEFAULT) =====
-  // Primary
+// ==========================================
+// 🎨 COLOR THEME PRESETS (Accent overrides)
+// ==========================================
+
+// ZINC (Default)
+:root, [data-color-theme="zinc"] {
+  --color-primary: #0f172a;
+  --color-primary-hover: #1e293b;
+  --color-primary-light: #f1f5f9;
+  --color-primary-rgb: 15, 23, 42;
+  --color-primary-contrast: #ffffff;
+}
+[data-theme="dark"][data-color-theme="zinc"] {
+  --color-primary: #f8fafc;
+  --color-primary-hover: #e2e8f0;
+  --color-primary-light: #1e293b;
+  --color-primary-rgb: 248, 250, 252;
+  --color-primary-contrast: #0f172a;
+}
+
+// ROSE (Red / Black-Red accent)
+[data-color-theme="rose"] {
+  --color-primary: #e11d48;
+  --color-primary-hover: #be123c;
+  --color-primary-light: #fff1f2;
+  --color-primary-rgb: 225, 29, 72;
+  --color-primary-contrast: #ffffff;
+}
+[data-theme="dark"][data-color-theme="rose"] {
+  --color-primary: #f43f5e;
+  --color-primary-hover: #fb7185;
+  --color-primary-light: #4c0519;
+  --color-primary-rgb: 244, 63, 94;
+  --color-primary-contrast: #ffffff;
+}
+
+// GREEN
+[data-color-theme="green"] {
+  --color-primary: #059669;
+  --color-primary-hover: #047857;
+  --color-primary-light: #ecfdf5;
+  --color-primary-rgb: 5, 150, 105;
+  --color-primary-contrast: #ffffff;
+}
+[data-theme="dark"][data-color-theme="green"] {
+  --color-primary: #10b981;
+  --color-primary-hover: #34d399;
+  --color-primary-light: #022c22;
+  --color-primary-rgb: 16, 185, 129;
+  --color-primary-contrast: #ffffff;
+}
+
+// ORANGE
+[data-color-theme="orange"] {
+  --color-primary: #ea580c;
+  --color-primary-hover: #c2410c;
+  --color-primary-light: #fff7ed;
+  --color-primary-rgb: 234, 88, 12;
+  --color-primary-contrast: #ffffff;
+}
+[data-theme="dark"][data-color-theme="orange"] {
+  --color-primary: #f97316;
+  --color-primary-hover: #fb923c;
+  --color-primary-light: #431407;
+  --color-primary-rgb: 249, 115, 22;
+  --color-primary-contrast: #ffffff;
+}
+
+// VIOLET (Сиреневый)
+[data-color-theme="violet"] {
+  --color-primary: #7c3aed;
+  --color-primary-hover: #6d28d9;
+  --color-primary-light: #f5f3ff;
+  --color-primary-rgb: 124, 58, 237;
+  --color-primary-contrast: #ffffff;
+}
+[data-theme="dark"][data-color-theme="violet"] {
+  --color-primary: #8b5cf6;
+  --color-primary-hover: #a78bfa;
+  --color-primary-light: #2e1065;
+  --color-primary-rgb: 139, 92, 246;
+  --color-primary-contrast: #ffffff;
+}
+
+// BLUE
+[data-color-theme="blue"] {
   --color-primary: #2563eb;
   --color-primary-hover: #1d4ed8;
   --color-primary-light: #eff6ff;
+  --color-primary-rgb: 37, 99, 235;
   --color-primary-contrast: #ffffff;
+}
+[data-theme="dark"][data-color-theme="blue"] {
+  --color-primary: #3b82f6;
+  --color-primary-hover: #60a5fa;
+  --color-primary-light: #1e3a8a;
+  --color-primary-rgb: 59, 130, 246;
+  --color-primary-contrast: #ffffff;
+}
 
+:root {
   // Surface & Background
   --color-bg-main: #f8fafc;
   --color-bg-secondary: #f1f5f9;

@@ -1,18 +1,30 @@
 /**
- * Theme Composable - Управление светлой/темной темой
+ * Theme Composable - Управление светлой/темной темой и цветовыми пресетами
  * Сохраняет выбор в localStorage, учитывает системную настройку
  */
 import { ref, computed, watch, onMounted } from 'vue'
 
 const THEME_KEY = 'snippet-vault-theme'
+const COLOR_THEME_KEY = 'snippet-vault-color-theme'
 const THEME_ATTR = 'data-theme'
+const COLOR_THEME_ATTR = 'data-color-theme'
 
 // Состояние темы: 'light' | 'dark' | 'system'
 const themeMode = ref('system')
 // Вычисленная тема: 'light' | 'dark'
 const resolvedTheme = ref('light')
-// Флаг переключения (для отключения переходов)
-const isSwitching = ref(false)
+
+// Цветовая тема: 'zinc' | 'rose' | 'green' | 'orange' | 'violet' | 'blue'
+const colorTheme = ref('zinc')
+
+const COLOR_PRESETS = [
+  { id: 'zinc', name: 'Цинк', color: '#71717a', darkColor: '#a1a1aa' },
+  { id: 'rose', name: 'Роза', color: '#f43f5e', darkColor: '#fb7185' },
+  { id: 'green', name: 'Зеленый', color: '#10b981', darkColor: '#34d399' },
+  { id: 'orange', name: 'Оранжевый', color: '#f97316', darkColor: '#fb923c' },
+  { id: 'violet', name: 'Сиреневый', color: '#8b5cf6', darkColor: '#a78bfa' },
+  { id: 'blue', name: 'Синий', color: '#3b82f6', darkColor: '#60a5fa' },
+]
 
 /**
  * Получить системную тему
@@ -23,12 +35,12 @@ function getSystemTheme() {
 }
 
 /**
- * Применить тему к document.documentElement
+ * Применить тему и цветовой пресет к document.documentElement
  */
-function applyTheme(theme) {
+function applyTheme(theme, color) {
+  if (typeof document === 'undefined') return
   const root = document.documentElement
   
-  // Временно отключаем переходы
   root.classList.add('theme-switching')
   
   if (theme === 'dark') {
@@ -38,8 +50,12 @@ function applyTheme(theme) {
   }
   
   resolvedTheme.value = theme
-  
-  // Включаем переходы обратно после следующего кадра
+
+  if (color) {
+    root.setAttribute(COLOR_THEME_ATTR, color)
+    colorTheme.value = color
+  }
+
   requestAnimationFrame(() => {
     root.classList.remove('theme-switching')
   })
@@ -49,22 +65,24 @@ function applyTheme(theme) {
  * Инициализация темы при загрузке
  */
 function initTheme() {
-  // Читаем сохранённую тему
-  const saved = localStorage.getItem(THEME_KEY)
-  if (saved && ['light', 'dark', 'system'].includes(saved)) {
-    themeMode.value = saved
+  const savedTheme = localStorage.getItem(THEME_KEY)
+  if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
+    themeMode.value = savedTheme
+  }
+
+  const savedColor = localStorage.getItem(COLOR_THEME_KEY)
+  if (savedColor && COLOR_PRESETS.some(p => p.id === savedColor)) {
+    colorTheme.value = savedColor
   }
   
-  // Вычисляем и применяем
   const theme = themeMode.value === 'system' ? getSystemTheme() : themeMode.value
-  applyTheme(theme)
+  applyTheme(theme, colorTheme.value)
   
-  // Слушаем системную тему
   if (typeof window !== 'undefined') {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     mediaQuery.addEventListener('change', (e) => {
       if (themeMode.value === 'system') {
-        applyTheme(e.matches ? 'dark' : 'light')
+        applyTheme(e.matches ? 'dark' : 'light', colorTheme.value)
       }
     })
   }
@@ -80,7 +98,18 @@ function setThemeMode(mode) {
   localStorage.setItem(THEME_KEY, mode)
   
   const theme = mode === 'system' ? getSystemTheme() : mode
-  applyTheme(theme)
+  applyTheme(theme, colorTheme.value)
+}
+
+/**
+ * Установить цветовую тему
+ */
+function setColorTheme(color) {
+  if (!COLOR_PRESETS.some(p => p.id === color)) return
+  
+  colorTheme.value = color
+  localStorage.setItem(COLOR_THEME_KEY, color)
+  applyTheme(resolvedTheme.value, color)
 }
 
 /**
@@ -93,33 +122,20 @@ function toggleTheme() {
   setThemeMode(nextMode)
 }
 
-/**
- * Проверить, тёмная ли тема сейчас
- */
 const isDark = computed(() => resolvedTheme.value === 'dark')
 
-// Auto-init
 onMounted(initTheme)
 
-// Export
 export function useTheme() {
   return {
     themeMode,
     resolvedTheme,
+    colorTheme,
+    COLOR_PRESETS,
     isDark,
-    isSwitching,
     setThemeMode,
+    setColorTheme,
     toggleTheme,
     initTheme,
   }
-}
-
-// Для использования вне setup()
-export const theme = {
-  get mode() { return themeMode.value },
-  get resolved() { return resolvedTheme.value },
-  get isDark() { return resolvedTheme.value === 'dark' },
-  setMode: setThemeMode,
-  toggle: toggleTheme,
-  init: initTheme,
 }

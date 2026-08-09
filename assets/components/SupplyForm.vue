@@ -201,9 +201,12 @@ const handleSubmit = () => {
       cursor: pointer;
       padding: 0.25rem 0.5rem;
       border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
       &:hover {
-        background: var(--color-bg-secondary);
+        background: var(--color-bg-tertiary);
         color: var(--color-text-main);
       }
     }
@@ -227,6 +230,14 @@ const handleSubmit = () => {
 
       .form-input, .form-select {
         @include input-base;
+        background-color: var(--color-bg-secondary);
+        color: var(--color-text-main);
+        border: 1px solid var(--color-border);
+
+        &:focus {
+          border-color: var(--color-primary);
+          box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.15);
+        }
 
         &.input-error {
           border-color: var(--color-critical);

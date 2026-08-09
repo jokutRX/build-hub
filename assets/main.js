@@ -1,11 +1,12 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import { theme } from './composables/useTheme.js'
+import { useTheme } from './composables/useTheme.js'
 import './styles/main.scss'
 
 // Инициализируем тему до монтирования приложения
-theme.init()
+const theme = useTheme()
+theme.initTheme()
 
 const app = createApp(App)
 

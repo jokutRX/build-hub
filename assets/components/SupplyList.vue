@@ -58,21 +58,19 @@ defineEmits(['request-delete'])
   .empty-state {
     text-align: center;
     padding: var(--space-12) var(--space-6);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    // border: 1px solid var(--color-border); // Убрана граница
+    // border-radius: var(--radius-lg); // Убрано скругление
+    color: var(--color-text-main); // Основной цвет
 
     .empty-title {
       font-weight: 800;
-      font-size: 1.05rem;
-      color: var(--color-text-main);
-      margin: 0;
+      font-size: 1.15rem;
+      margin-bottom: var(--space-2);
     }
 
     .empty-sub {
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       color: var(--color-text-muted);
-      margin: var(--space-1) 0 0 0;
     }
   }
 

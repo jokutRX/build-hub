@@ -47,7 +47,18 @@
         <!-- БЛОК РАСЧЕТОВ БЭКЕНДА (SupplyCalculationService) -->
         <div v-if="hasCalculationData" class="calculation-section">
           <div class="calc-header">
-            <span class="calc-icon" aria-hidden="true">📊</span>
+            <svg class="calc-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+              <line x1="8" y1="6" x2="16" y2="6"></line>
+              <line x1="16" y1="14" x2="16" y2="18"></line>
+              <path d="M16 10h.01"></path>
+              <path d="M12 10h.01"></path>
+              <path d="M8 10h.01"></path>
+              <path d="M12 14h.01"></path>
+              <path d="M8 14h.01"></path>
+              <path d="M12 18h.01"></path>
+              <path d="M8 18h.01"></path>
+            </svg>
             <span class="calc-title">Автоматический расчёт логистики</span>
             <span class="calc-badge" v-if="calcData.confidence">Высокая точность</span>
           </div>
@@ -55,7 +66,11 @@
           <div class="calc-grid">
             <!-- Рассчитанный вес/объём -->
             <div class="calc-card weight-card" v-if="calcData.calculatedAmount">
-              <div class="calc-card-icon" aria-hidden="true">⚖️</div>
+              <div class="calc-card-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 3v18M3 7l9-4 9 4M3 7l3 9a3 3 0 0 0 6 0L9 7M15 7l3 9a3 3 0 0 0 6 0l-3-9"></path>
+                </svg>
+              </div>
               <div class="calc-card-content">
                 <span class="calc-card-label">Рассчитанный вес</span>
                 <span class="calc-card-value accent">{{ calcData.calculatedAmount }}</span>
@@ -76,7 +91,14 @@
 
             <!-- Рекомендуемая техника -->
             <div class="calc-card machinery-card" v-if="calcData.recommendedMachinery">
-              <div class="calc-card-icon" aria-hidden="true">{{ machineryIcon }}</div>
+              <div class="calc-card-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="1" y="3" width="15" height="13" rx="2"></rect>
+                  <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                  <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                  <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+              </div>
               <div class="calc-card-content">
                 <span class="calc-card-label">Рекомендуемая техника</span>
                 <span class="calc-card-value">{{ calcData.recommendedMachinery }}</span>
@@ -97,7 +119,14 @@
 
             <!-- Количество рейсов с визуальным индикатором -->
             <div class="calc-card trips-card" v-if="calcData.tripsCount">
-              <div class="calc-card-icon" aria-hidden="true">🔄</div>
+              <div class="calc-card-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="17 1 21 5 17 9"></polyline>
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                  <polyline points="7 23 3 19 7 15"></polyline>
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                </svg>
+              </div>
               <div class="calc-card-content">
                 <span class="calc-card-label">Количество рейсов</span>
                 <div class="trips-value-wrap">
@@ -123,7 +152,15 @@
 
             <!-- Примечание по логистике -->
             <div class="calc-card note-card full-width" v-if="calcData.note || calcData.comment">
-              <div class="calc-card-icon" aria-hidden="true">📝</div>
+              <div class="calc-card-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </div>
               <div class="calc-card-content full-width">
                 <span class="calc-card-label">Примечание по логистике</span>
                 <span class="calc-card-value note">{{ calcData.note || calcData.comment }}</span>
@@ -252,16 +289,6 @@ const calcData = computed(() => {
 
 const hasCalculationData = computed(() => {
   return Object.values(calcData.value).some(val => val !== null && val !== undefined && val !== '')
-})
-
-// Иконка для техники
-const machineryIcon = computed(() => {
-  const m = (calcData.value.recommendedMachinery || '').toLowerCase()
-  if (m.includes('тяжел') || m.includes('тонар') || m.includes('25т')) return '🚛'
-  if (m.includes('камаз') || m.includes('20т') || m.includes('самосвал')) return '🚚'
-  if (m.includes('маз') || m.includes('10т') || m.includes('самосвал')) return '🚛'
-  if (m.includes('газель') || m.includes('мал') || m.includes('3.5')) return '🚐'
-  return '🚛'
 })
 
 // Склонение слова "рейс"
@@ -458,8 +485,9 @@ const showCopyToast = (message, isError = false) => {
         margin-bottom: var(--space-3);
         flex-wrap: wrap;
 
-        .calc-icon {
-          font-size: 1rem;
+        .calc-icon-svg {
+          color: var(--color-primary);
+          flex-shrink: 0;
         }
 
         .calc-title {
@@ -473,11 +501,12 @@ const showCopyToast = (message, isError = false) => {
         .calc-badge {
           margin-left: auto;
           font-size: 0.65rem;
-          font-weight: 700;
-          background: var(--color-success-bg);
-          color: var(--color-success);
-          padding: var(--space-1) var(--space-2);
-          border-radius: var(--radius-full);
+          font-weight: 600;
+          background: var(--color-bg-secondary);
+          color: var(--color-text-muted);
+          border: 1px solid var(--color-border);
+          padding: 2px 8px;
+          border-radius: var(--radius-sm);
         }
       }
 
@@ -510,7 +539,7 @@ const showCopyToast = (message, isError = false) => {
         }
 
         .calc-card-icon {
-          font-size: 1.25rem;
+          color: var(--color-text-secondary);
           flex-shrink: 0;
           width: 36px;
           height: 36px;
@@ -519,6 +548,7 @@ const showCopyToast = (message, isError = false) => {
           justify-content: center;
           background: var(--color-bg-secondary);
           border-radius: var(--radius-md);
+          border: 1px solid var(--color-border);
         }
 
         .calc-card-content {
@@ -589,23 +619,6 @@ const showCopyToast = (message, isError = false) => {
 
         &:hover .calc-card-action {
           opacity: 1;
-        }
-
-        /* Варианты карточек */
-        &.weight-card {
-          border-left: 3px solid var(--color-primary);
-        }
-
-        &.machinery-card {
-          border-left: 3px solid var(--color-success);
-        }
-
-        &.trips-card {
-          border-left: 3px solid var(--color-warning);
-        }
-
-        &.note-card {
-          border-left: 3px solid var(--color-info);
         }
       }
 
