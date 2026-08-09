@@ -52,40 +52,40 @@ defineEmits(['request-delete'])
   .list-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--space-3);
   }
 
   .empty-state {
     text-align: center;
-    padding: 3rem 1.5rem;
-    background: #ffffff;
-    border: 1px solid $border;
-    border-radius: 10px;
+    padding: var(--space-12) var(--space-6);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
 
     .empty-title {
       font-weight: 800;
       font-size: 1.05rem;
-      color: $text-main;
+      color: var(--color-text-main);
       margin: 0;
     }
 
     .empty-sub {
       font-size: 0.85rem;
-      color: $text-muted;
-      margin: 0.35rem 0 0 0;
+      color: var(--color-text-muted);
+      margin: var(--space-1) 0 0 0;
     }
   }
 
   .list-skeleton {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--space-3);
 
     .skeleton-card {
       height: 58px;
-      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background: linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-border) 50%, var(--color-bg-secondary) 75%);
       background-size: 200% 100%;
-      border-radius: 10px;
+      border-radius: var(--radius-lg);
       animation: skeleton-shimmer 1.5s infinite;
     }
   }

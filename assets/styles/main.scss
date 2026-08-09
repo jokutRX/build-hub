@@ -1,39 +1,243 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 // ==========================================
-// 🎨 DESIGN SYSTEM CONSTANTS & TOKENS
+// 🎨 DESIGN SYSTEM - CSS CUSTOM PROPERTIES (Light & Dark)
 // ==========================================
-$primary: #2563eb;
-$primary-hover: #1d4ed8;
-$primary-light: #eff6ff;
-$bg-main: #f8fafc;
-$surface: #ffffff;
-$border: #e2e8f0;
 
-$text-main: #0f172a;
-$text-muted: #64748b;
-$text-light: #94a3b8;
+:root {
+  // ===== LIGHT THEME (DEFAULT) =====
+  // Primary
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-light: #eff6ff;
+  --color-primary-contrast: #ffffff;
 
-// Priorities colors
-$critical: #ef4444;
-$critical-bg: #fef2f2;
-$critical-border: #fecaca;
+  // Surface & Background
+  --color-bg-main: #f8fafc;
+  --color-bg-secondary: #f1f5f9;
+  --color-bg-tertiary: #e2e8f0;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f8fafc;
+  --color-surface-pressed: #f1f5f9;
 
-$medium: #f59e0b;
-$medium-bg: #fffbeb;
-$medium-border: #fde68a;
+  // Borders
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+  --color-border-focus: #2563eb;
 
-$low: #10b981;
-$low-bg: #ecfdf5;
-$low-border: #a7f3d0;
+  // Text
+  --color-text-main: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted: #64748b;
+  --color-text-light: #94a3b8;
+  --color-text-inverse: #ffffff;
 
-// Mixins
+  // Priority - Critical (Red)
+  --color-critical: #ef4444;
+  --color-critical-bg: #fef2f2;
+  --color-critical-border: #fecaca;
+  --color-critical-hover: #fee2e2;
+
+  // Priority - Medium (Amber)
+  --color-medium: #f59e0b;
+  --color-medium-bg: #fffbeb;
+  --color-medium-border: #fde68a;
+  --color-medium-hover: #fef3c7;
+
+  // Priority - Low (Green)
+  --color-low: #10b981;
+  --color-low-bg: #ecfdf5;
+  --color-low-border: #a7f3d0;
+  --color-low-hover: #d1fae5;
+
+  // Success
+  --color-success: #10b981;
+  --color-success-bg: #ecfdf5;
+  --color-success-border: #a7f3d0;
+
+  // Error
+  --color-error: #ef4444;
+  --color-error-bg: #fef2f2;
+  --color-error-border: #fecaca;
+
+  // Warning
+  --color-warning: #f59e0b;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fde68a;
+
+  // Info
+  --color-info: #3b82f6;
+  --color-info-bg: #eff6ff;
+  --color-info-border: #bfdbfe;
+
+  // Shadows
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.08), 0 10px 10px rgba(0, 0, 0, 0.04);
+
+  // Radius
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+
+  // Spacing (4px base)
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  // Transitions
+  --transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  // Z-index
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-popover: 600;
+  --z-tooltip: 700;
+  --z-toast: 800;
+
+  // Sidebar
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 72px;
+
+  // Header
+  --header-height: 56px;
+}
+
+// ===== DARK THEME =====
+[data-theme="dark"] {
+  // Primary (adjusted for dark)
+  --color-primary: #3b82f6;
+  --color-primary-hover: #60a5fa;
+  --color-primary-light: #1e3a5f;
+  --color-primary-contrast: #ffffff;
+
+  // Surface & Background
+  --color-bg-main: #0f172a;
+  --color-bg-secondary: #1e293b;
+  --color-bg-tertiary: #334155;
+  --color-surface: #1e293b;
+  --color-surface-hover: #334155;
+  --color-surface-pressed: #475569;
+
+  // Borders
+  --color-border: #334155;
+  --color-border-strong: #475569;
+  --color-border-focus: #3b82f6;
+
+  // Text
+  --color-text-main: #f8fafc;
+  --color-text-secondary: #e2e8f0;
+  --color-text-muted: #94a3b8;
+  --color-text-light: #64748b;
+  --color-text-inverse: #0f172a;
+
+  // Priority - Critical (Red - adjusted)
+  --color-critical: #f87171;
+  --color-critical-bg: #450a0a;
+  --color-critical-border: #7f1d1d;
+  --color-critical-hover: #7f1d1d;
+
+  // Priority - Medium (Amber - adjusted)
+  --color-medium: #fbbf24;
+  --color-medium-bg: #451a03;
+  --color-medium-border: #78350f;
+  --color-medium-hover: #78350f;
+
+  // Priority - Low (Green - adjusted)
+  --color-low: #34d399;
+  --color-low-bg: #052e16;
+  --color-low-border: #064e3b;
+  --color-low-hover: #064e3b;
+
+  // Success
+  --color-success: #34d399;
+  --color-success-bg: #052e16;
+  --color-success-border: #064e3b;
+
+  // Error
+  --color-error: #f87171;
+  --color-error-bg: #450a0a;
+  --color-error-border: #7f1d1d;
+
+  // Warning
+  --color-warning: #fbbf24;
+  --color-warning-bg: #451a03;
+  --color-warning-border: #78350f;
+
+  // Info
+  --color-info: #60a5fa;
+  --color-info-bg: #1e3a5f;
+  --color-info-border: #1e40af;
+
+  // Shadows (darker, more subtle)
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.4), 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5), 0 10px 10px rgba(0, 0, 0, 0.4);
+}
+
+// ==========================================
+// SCSS VARIABLES (for backward compat & mixins)
+// ==========================================
+$primary: var(--color-primary);
+$primary-hover: var(--color-primary-hover);
+$primary-light: var(--color-primary-light);
+$bg-main: var(--color-bg-main);
+$surface: var(--color-surface);
+$border: var(--color-border);
+
+$text-main: var(--color-text-main);
+$text-muted: var(--color-text-muted);
+$text-light: var(--color-text-light);
+
+$critical: var(--color-critical);
+$critical-bg: var(--color-critical-bg);
+$critical-border: var(--color-critical-border);
+
+$medium: var(--color-medium);
+$medium-bg: var(--color-medium-bg);
+$medium-border: var(--color-medium-border);
+
+$low: var(--color-low);
+$low-bg: var(--color-low-bg);
+$low-border: var(--color-low-border);
+
+// ==========================================
+// MIXINS
+// ==========================================
 @mixin card-shadow {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
 
   &:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+@mixin card-shadow-lg {
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+
+  &:hover {
+    box-shadow: var(--shadow-lg);
   }
 }
 
@@ -41,39 +245,83 @@ $low-border: #a7f3d0;
   width: 100%;
   padding: 0.625rem 0.875rem;
   font-size: 0.875rem;
-  color: $text-main;
-  background-color: $surface;
-  border: 1px solid $border;
-  border-radius: 8px;
+  color: var(--color-text-main);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
 
   &:focus {
-    border-color: $primary;
-    box-shadow: 0 0 0 3px rgba($primary, 0.15);
+    border-color: var(--color-border-focus);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.15);
   }
 
   &::placeholder {
-    color: $text-light;
+    color: var(--color-text-light);
+  }
+
+  &:disabled {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
   }
 }
 
-// Global reset & font stack
+@mixin button-base {
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+@mixin focus-ring {
+  outline: none;
+  ring: 2px solid var(--color-primary);
+  ring-offset: 2px;
+}
+
+// ==========================================
+// GLOBAL RESET & BASE
+// ==========================================
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+html {
+  // Smooth theme transitions
+  transition: background-color var(--transition-slow), color var(--transition-slow);
+}
+
 body {
-  background-color: $bg-main;
-  color: $text-main;
-  // Красивый системный стек: если Inter не подгрузился, включится идеальный системный sans-serif
+  background-color: var(--color-bg-main);
+  color: var(--color-text-main);
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
+  min-height: 100vh;
+  transition: background-color var(--transition-slow), color var(--transition-slow);
+}
+
+// Theme transition for all elements
+* {
+  transition: background-color var(--transition-slow), border-color var(--transition-slow), color var(--transition-slow), box-shadow var(--transition-slow);
+}
+
+// Disable transitions during theme switch to prevent flash
+.theme-switching * {
+  transition: none !important;
 }
 
 button, input, select, textarea {
@@ -81,14 +329,42 @@ button, input, select, textarea {
 }
 
 /* --- СКРЫВАЕМ СТРЕЛОЧКИ У INPUT NUMBER --- */
-/* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-/* Firefox */
 input[type=number] {
   -moz-appearance: textfield;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-strong);
+}
+
+/* Selection */
+::selection {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+[data-theme="dark"] ::selection {
+  background: var(--color-primary-light);
+  color: var(--color-primary-contrast);
 }

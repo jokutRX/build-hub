@@ -189,7 +189,7 @@ const handleSubmit = () => {
     h2 {
       font-size: 1.25rem;
       font-weight: 800;
-      color: $text-main;
+      color: var(--color-text-main);
       margin: 0;
     }
 
@@ -197,14 +197,14 @@ const handleSubmit = () => {
       background: transparent;
       border: none;
       font-size: 1.2rem;
-      color: $text-light;
+      color: var(--color-text-light);
       cursor: pointer;
       padding: 0.25rem 0.5rem;
-      border-radius: 6px;
+      border-radius: var(--radius-sm);
 
       &:hover {
-        background: #f1f5f9;
-        color: $text-main;
+        background: var(--color-bg-secondary);
+        color: var(--color-text-main);
       }
     }
   }
@@ -222,15 +222,15 @@ const handleSubmit = () => {
       label {
         font-size: 0.8rem;
         font-weight: 700;
-        color: $text-muted;
+        color: var(--color-text-muted);
       }
 
       .form-input, .form-select {
         @include input-base;
 
         &.input-error {
-          border-color: $critical;
-          background-color: $critical-bg;
+          border-color: var(--color-critical);
+          background-color: var(--color-critical-bg);
         }
       }
     }
@@ -242,11 +242,11 @@ const handleSubmit = () => {
     }
 
     .error-banner {
-      background-color: $critical-bg;
-      color: $critical;
-      border: 1px solid $critical-border;
+      background-color: var(--color-critical-bg);
+      color: var(--color-critical);
+      border: 1px solid var(--color-critical-border);
       padding: 0.6rem 0.8rem;
-      border-radius: 8px;
+      border-radius: var(--radius-md);
       font-size: 0.8rem;
       font-weight: 600;
       line-height: 1.3;
@@ -262,12 +262,12 @@ const handleSubmit = () => {
         cursor: pointer;
         font-size: 0.85rem;
         font-weight: 600;
-        color: $text-main;
+        color: var(--color-text-main);
 
         input[type="checkbox"] {
           width: 16px;
           height: 16px;
-          accent-color: $primary;
+          accent-color: var(--color-primary);
           cursor: pointer;
         }
       }
@@ -281,33 +281,33 @@ const handleSubmit = () => {
 
       button {
         padding: 0.65rem 1.25rem;
-        border-radius: 8px;
+        border-radius: var(--radius-md);
         font-weight: 700;
         font-size: 0.875rem;
         cursor: pointer;
         border: none;
-        transition: all 0.2s;
+        transition: all var(--transition-fast);
       }
 
       .btn-secondary {
-        background: #f1f5f9;
-        color: $text-muted;
+        background: var(--color-bg-secondary);
+        color: var(--color-text-muted);
 
         &:hover {
-          background: #e2e8f0;
+          background: var(--color-bg-tertiary);
         }
       }
 
       .btn-primary {
-        background: $primary;
-        color: #ffffff;
+        background: var(--color-primary);
+        color: var(--color-primary-contrast);
 
         &:hover:not(:disabled) {
-          background: $primary-hover;
+          background: var(--color-primary-hover);
         }
 
         &:disabled {
-          background: $text-light;
+          background: var(--color-text-light);
           opacity: 0.6;
           cursor: not-allowed;
         }

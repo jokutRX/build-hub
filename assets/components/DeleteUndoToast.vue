@@ -91,30 +91,29 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@use "../styles/main.scss" as *;
 
 .undo-toast {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 2000;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
-  padding: 0.85rem 1.25rem;
-  border-radius: 12px;
-  background: #ffffff;
-  color: $text-main;
-  border: 1px solid $border;
-  border-left: 4px solid #ef4444; // Деструктивный акцент удаления
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  gap: var(--space-6);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-critical);
+  box-shadow: var(--shadow-lg);
   white-space: nowrap;
 
   .toast-left {
     display: flex;
     align-items: center;
-    gap: 0.85rem;
+    gap: var(--space-3);
 
     .timer-progress {
       position: relative;
@@ -130,7 +129,12 @@ onUnmounted(() => {
         inset: 0;
         transform: rotate(-90deg);
 
+        .progress-ring__background {
+          stroke: var(--color-critical-bg);
+        }
+
         .progress-ring__circle {
+          stroke: var(--color-critical);
           transition: stroke-dashoffset 1s linear;
         }
       }
@@ -138,7 +142,7 @@ onUnmounted(() => {
       .timer-number {
         font-weight: 800;
         font-size: 0.8rem;
-        color: #ef4444;
+        color: var(--color-critical);
         line-height: 1;
       }
     }
@@ -146,31 +150,31 @@ onUnmounted(() => {
     .toast-text {
       font-size: 0.875rem;
       font-weight: 500;
-      color: $text-muted;
+      color: var(--color-text-muted);
 
       strong {
         font-weight: 700;
-        color: $text-main;
+        color: var(--color-text-main);
       }
     }
   }
 
   .btn-undo {
-    background: #eff6ff;
+    background: var(--color-primary-light);
     border: none;
-    color: $primary;
+    color: var(--color-primary);
     font-weight: 700;
     font-size: 0.85rem;
     cursor: pointer;
-    padding: 0.4rem 0.85rem;
-    border-radius: 8px;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-md);
     white-space: nowrap;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
     flex-shrink: 0;
 
     &:hover {
-      background: #dbeafe;
-      color: color-mix(in srgb, $primary 80%, black);
+      background: var(--color-primary-light);
+      opacity: 0.9;
     }
   }
 }

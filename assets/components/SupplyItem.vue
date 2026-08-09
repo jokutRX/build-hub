@@ -314,13 +314,15 @@ const showCopyToast = (message, isError = false) => {
 </script>
 
 <style lang="scss" scoped>
+@use "../styles/main.scss" as *;
+
 .supply-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  margin-bottom: 0.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-3);
   overflow: hidden;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+  transition: box-shadow var(--transition-base), border-color var(--transition-base), opacity var(--transition-base);
 
   &.pending-delete {
     opacity: 0.5;
@@ -328,28 +330,28 @@ const showCopyToast = (message, isError = false) => {
   }
 
   &:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    border-color: var(--color-border-strong);
+    box-shadow: var(--shadow-md);
   }
 
   .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.25rem;
+    padding: var(--space-4) var(--space-5);
     cursor: pointer;
     user-select: none;
 
     .header-left {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--space-3);
 
       .arrow-icon {
         font-size: 1.25rem;
         font-weight: 800;
-        color: #64748b;
-        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        color: var(--color-text-muted);
+        transition: transform var(--transition-slow);
         display: inline-block;
         line-height: 1;
 
@@ -361,83 +363,83 @@ const showCopyToast = (message, isError = false) => {
       .title {
         font-size: 0.95rem;
         font-weight: 700;
-        color: #0f172a;
+        color: var(--color-text-main);
         margin: 0;
       }
 
       .site-badge {
-        background: #f1f5f9;
-        color: #475569;
+        background: var(--color-bg-secondary);
+        color: var(--color-text-secondary);
         font-size: 0.75rem;
         font-weight: 600;
-        padding: 0.25rem 0.6rem;
-        border-radius: 6px;
+        padding: var(--space-1) var(--space-2);
+        border-radius: var(--radius-sm);
       }
     }
 
     .header-right {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: var(--space-4);
 
       .quantity {
         font-weight: 700;
         font-size: 0.9rem;
-        color: #0f172a;
+        color: var(--color-text-main);
       }
 
       .priority-badge {
         font-size: 0.75rem;
         font-weight: 700;
-        padding: 0.3rem 0.65rem;
-        border-radius: 6px;
+        padding: var(--space-1) var(--space-2);
+        border-radius: var(--radius-sm);
 
-        &.critical { background: #fef2f2; color: #dc2626; }
-        &.medium { background: #fefce8; color: #ca8a04; }
-        &.low { background: #f0fdf4; color: #16a34a; }
+        &.critical { background: var(--color-critical-bg); color: var(--color-critical); }
+        &.medium { background: var(--color-medium-bg); color: var(--color-medium); }
+        &.low { background: var(--color-low-bg); color: var(--color-low); }
       }
 
       .btn-delete {
         background: transparent;
         border: none;
-        color: #94a3b8;
+        color: var(--color-text-light);
         font-size: 1.1rem;
         cursor: pointer;
-        padding: 0.2rem 0.5rem;
-        border-radius: 4px;
-        transition: all 0.2s;
+        padding: var(--space-1) var(--space-2);
+        border-radius: var(--radius-xs);
+        transition: all var(--transition-fast);
 
         &:hover {
-          color: #ef4444;
-          background: #fef2f2;
+          color: var(--color-critical);
+          background: var(--color-critical-bg);
         }
       }
     }
   }
 
   .card-details {
-    padding: 1rem 1.25rem 1.25rem;
-    background: #f8fafc;
-    border-top: 1px solid #f1f5f9;
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-bg-main);
+    border-top: 1px solid var(--color-border);
 
     .details-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
+      gap: var(--space-4);
 
       .detail-item {
         display: flex;
         flex-direction: column;
-        gap: 0.2rem;
+        gap: var(--space-1);
 
         .label {
           font-size: 0.75rem;
-          color: #64748b;
+          color: var(--color-text-muted);
           font-weight: 600;
         }
         .value {
           font-size: 0.875rem;
-          color: #0f172a;
+          color: var(--color-text-main);
           font-weight: 600;
         }
       }
@@ -445,15 +447,15 @@ const showCopyToast = (message, isError = false) => {
 
     /* СТИЛИ ДЛЯ БЛОКА АВТОРАСЧЕТА */
     .calculation-section {
-      margin-top: 1rem;
-      padding-top: 0.85rem;
-      border-top: 1px dashed #cbd5e1;
+      margin-top: var(--space-4);
+      padding-top: var(--space-3);
+      border-top: 1px dashed var(--color-border);
 
       .calc-header {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 0.75rem;
+        gap: var(--space-2);
+        margin-bottom: var(--space-3);
         flex-wrap: wrap;
 
         .calc-icon {
@@ -465,41 +467,41 @@ const showCopyToast = (message, isError = false) => {
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.03em;
-          color: #2563eb;
+          color: var(--color-primary);
         }
 
         .calc-badge {
           margin-left: auto;
           font-size: 0.65rem;
           font-weight: 700;
-          background: #dcfce7;
-          color: #166534;
-          padding: 0.15rem 0.5rem;
-          border-radius: 9999px;
+          background: var(--color-success-bg);
+          color: var(--color-success);
+          padding: var(--space-1) var(--space-2);
+          border-radius: var(--radius-full);
         }
       }
 
       .calc-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 0.75rem;
+        gap: var(--space-3);
       }
 
       /* Карточки расчётов */
       .calc-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 1rem;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4);
         display: flex;
         align-items: flex-start;
-        gap: 0.75rem;
-        transition: all 0.2s ease;
+        gap: var(--space-3);
+        transition: all var(--transition-base);
         position: relative;
 
         &:hover {
-          border-color: #cbd5e1;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+          border-color: var(--color-border-strong);
+          box-shadow: var(--shadow-md);
           transform: translateY(-1px);
         }
 
@@ -515,8 +517,8 @@ const showCopyToast = (message, isError = false) => {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #f1f5f9;
-          border-radius: 8px;
+          background: var(--color-bg-secondary);
+          border-radius: var(--radius-md);
         }
 
         .calc-card-content {
@@ -524,12 +526,12 @@ const showCopyToast = (message, isError = false) => {
           min-width: 0;
           display: flex;
           flex-direction: column;
-          gap: 0.25rem;
+          gap: var(--space-1);
 
           .calc-card-label {
             font-size: 0.7rem;
             font-weight: 600;
-            color: #64748b;
+            color: var(--color-text-muted);
             text-transform: uppercase;
             letter-spacing: 0.02em;
           }
@@ -537,17 +539,17 @@ const showCopyToast = (message, isError = false) => {
           .calc-card-value {
             font-size: 0.95rem;
             font-weight: 700;
-            color: #0f172a;
+            color: var(--color-text-main);
             word-break: break-word;
 
             &.accent {
-              color: #2563eb;
+              color: var(--color-primary);
             }
 
             &.note {
               font-size: 0.85rem;
               font-weight: 400;
-              color: #475569;
+              color: var(--color-text-secondary);
               font-style: italic;
               line-height: 1.4;
             }
@@ -555,7 +557,7 @@ const showCopyToast = (message, isError = false) => {
 
           .calc-card-hint {
             font-size: 0.7rem;
-            color: #94a3b8;
+            color: var(--color-text-light);
             font-weight: 500;
           }
         }
@@ -568,16 +570,16 @@ const showCopyToast = (message, isError = false) => {
           justify-content: center;
           background: transparent;
           border: none;
-          border-radius: 6px;
-          color: #94a3b8;
+          border-radius: var(--radius-sm);
+          color: var(--color-text-light);
           cursor: pointer;
           opacity: 0;
-          transition: all 0.2s ease;
+          transition: all var(--transition-fast);
           flex-shrink: 0;
 
           &:hover {
-            background: #f1f5f9;
-            color: #2563eb;
+            background: var(--color-bg-secondary);
+            color: var(--color-primary);
           }
 
           svg {
@@ -591,19 +593,19 @@ const showCopyToast = (message, isError = false) => {
 
         /* Варианты карточек */
         &.weight-card {
-          border-left: 3px solid #2563eb;
+          border-left: 3px solid var(--color-primary);
         }
 
         &.machinery-card {
-          border-left: 3px solid #10b981;
+          border-left: 3px solid var(--color-success);
         }
 
         &.trips-card {
-          border-left: 3px solid #f59e0b;
+          border-left: 3px solid var(--color-warning);
         }
 
         &.note-card {
-          border-left: 3px solid #8b5cf6;
+          border-left: 3px solid var(--color-info);
         }
       }
 
@@ -611,80 +613,80 @@ const showCopyToast = (message, isError = false) => {
       .trips-value-wrap {
         display: flex;
         align-items: baseline;
-        gap: 0.35rem;
+        gap: var(--space-1);
       }
 
       .trips-unit {
         font-size: 0.8rem;
         font-weight: 500;
-        color: #64748b;
+        color: var(--color-text-muted);
       }
 
       .trips-visual {
         display: flex;
         gap: 3px;
-        margin-top: 0.35rem;
-        padding-top: 0.35rem;
-        border-top: 1px dashed #e2e8f0;
+        margin-top: var(--space-1);
+        padding-top: var(--space-1);
+        border-top: 1px dashed var(--color-border);
 
         .trip-dot {
           width: 8px;
           height: 8px;
-          background: #e2e8f0;
+          background: var(--color-border);
           border-radius: 50%;
-          transition: all 0.2s ease;
+          transition: all var(--transition-fast);
         }
 
         .trip-dot:nth-child(-n + 3) {
-          background: #f59e0b;
+          background: var(--color-warning);
         }
 
         .trip-dot:nth-child(n + 4):nth-child(-n + 6) {
-          background: #2563eb;
+          background: var(--color-primary);
         }
 
         .trip-dot:nth-child(n + 7) {
-          background: #10b981;
+          background: var(--color-success);
         }
       }
     }
 
     /* Подробности расчёта (expandable) */
     .calc-details {
-      margin-top: 1rem;
-      padding-top: 0.75rem;
-      border-top: 1px dashed #cbd5e1;
-      animation: calc-details-slide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      margin-top: var(--space-4);
+      padding-top: var(--space-3);
+      border-top: 1px dashed var(--color-border);
+      animation: calc-details-slide var(--transition-slow);
     }
 
     .calc-details-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.5rem 0.75rem;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
+      padding: var(--space-2) var(--space-3);
+      background: var(--color-bg-main);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
       cursor: pointer;
       user-select: none;
-      transition: all 0.2s ease;
+      transition: all var(--transition-fast);
 
       &:hover {
-        background: #f1f5f9;
-        border-color: #cbd5e1;
+        background: var(--color-bg-secondary);
+        border-color: var(--color-border-strong);
       }
 
       .details-toggle-label {
         font-size: 0.75rem;
         font-weight: 600;
-        color: #2563eb;
+        color: var(--color-primary);
       }
 
       .details-toggle-icon {
         font-size: 1rem;
         font-weight: 700;
-        color: #64748b;
-        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        color: var(--color-text-muted);
+        transition: transform var(--transition-slow);
         display: inline-block;
 
         &.rotated {
@@ -694,19 +696,19 @@ const showCopyToast = (message, isError = false) => {
     }
 
     .calc-details-content {
-      margin-top: 0.5rem;
-      padding: 0.5rem 0.75rem;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
+      margin-top: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
       border-top: none;
 
       .detail-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.4rem 0;
-        border-bottom: 1px solid #f1f5f9;
+        padding: var(--space-1) 0;
+        border-bottom: 1px solid var(--color-border);
 
         &:last-child {
           border-bottom: none;
@@ -715,14 +717,14 @@ const showCopyToast = (message, isError = false) => {
 
         .detail-label {
           font-size: 0.75rem;
-          color: #64748b;
+          color: var(--color-text-muted);
           font-weight: 500;
         }
 
         .detail-value {
           font-size: 0.8rem;
           font-weight: 600;
-          color: #0f172a;
+          color: var(--color-text-main);
           font-family: 'JetBrains Mono', 'Fira Code', monospace;
         }
       }

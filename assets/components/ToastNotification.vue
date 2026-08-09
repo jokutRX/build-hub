@@ -52,28 +52,28 @@ watch(() => props.modelValue, (newVal) => {
 <style lang="scss" scoped>
 .toast-container {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 2000;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
   min-width: 300px;
   max-width: 420px;
-  padding: 1rem 1.25rem;
-  border-radius: 10px;
-  background: #ffffff;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
   border-left: 5px solid;
 
   &.success {
-    border-left-color: #22c55e;
-    .toast-icon { background: #dcfce7; color: #15803d; }
+    border-left-color: var(--color-success);
+    .toast-icon { background: var(--color-success-bg); color: var(--color-success); }
   }
 
   &.error {
-    border-left-color: #ef4444;
-    .toast-icon { background: #fee2e2; color: #b91c1c; }
+    border-left-color: var(--color-error);
+    .toast-icon { background: var(--color-error-bg); color: var(--color-error); }
   }
 
   .toast-icon {
@@ -94,29 +94,29 @@ watch(() => props.modelValue, (newVal) => {
     .toast-title {
       font-weight: 700;
       font-size: 0.9rem;
-      color: #0f172a;
-      margin-bottom: 0.15rem;
+      color: var(--color-text-main);
+      margin-bottom: var(--space-1);
     }
 
     .toast-message {
       font-size: 0.8rem;
-      color: #64748b;
+      color: var(--color-text-muted);
     }
   }
 
   .toast-close {
     background: transparent;
     border: none;
-    color: #94a3b8;
+    color: var(--color-text-light);
     cursor: pointer;
     font-size: 1rem;
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    transition: all 0.2s;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-xs);
+    transition: all var(--transition-fast);
 
     &:hover {
-      color: #0f172a;
-      background: #f1f5f9;
+      color: var(--color-text-main);
+      background: var(--color-bg-secondary);
     }
   }
 }

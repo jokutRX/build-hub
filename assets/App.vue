@@ -13,16 +13,15 @@ import AppSidebar from './components/AppSidebar.vue'
 </script>
 
 <style lang="scss" scoped>
-@use "./styles/main.scss" as *;
 
 .app-layout {
   display: flex;
   min-height: 100vh;
-  background-color: #f8fafc; 
+  background-color: var(--color-bg-main); 
 
   .main-content {
     flex: 1;
-    padding: 2rem 2.5rem 4rem;
+    padding: var(--space-8) var(--space-10) var(--space-16);
     overflow-y: auto;
   }
 }

@@ -29,6 +29,25 @@
       </div>
     </nav>
 
+    <!-- Theme Toggle -->
+    <div v-if="!isCollapsed" class="theme-toggle-section">
+      <div class="theme-toggle-label">Тема</div>
+      <button 
+        class="theme-toggle-btn" 
+        @click="toggleTheme"
+        :title="themeTooltip"
+        :aria-label="themeTooltip"
+      >
+        <svg v-if="!isDark" class="theme-icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5" />
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        </svg>
+        <svg v-else class="theme-icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      </button>
+    </div>
+
     <!-- Toggle Button -->
     <button class="toggle-btn" @click="isCollapsed = !isCollapsed" title="Свернуть/Развернуть">
       <svg class="toggle-icon" :class="{ rotated: isCollapsed }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -39,9 +58,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useTheme } from '../composables/useTheme.js'
+
+const { isDark, toggleTheme } = useTheme()
 
 const isCollapsed = ref(false)
+
+const themeTooltip = computed(() => isDark.value ? 'Переключить на светлую тему' : 'Переключить на тёмную тему')
 </script>
 
 <style lang="scss" scoped>
@@ -50,12 +74,11 @@ const isCollapsed = ref(false)
 .app-sidebar {
   width: 250px;
   min-height: 100vh;
-  /* Светлый фирменный фон, чуть выделенный относительно основной области */
-  background: #ffffff;
-  border-right: 1px solid $border;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  padding: 1.25rem 0.85rem;
+  padding: var(--space-5) var(--space-3);
   transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: sticky;
   top: 0;
@@ -71,7 +94,7 @@ const isCollapsed = ref(false)
 
     .nav-item {
       justify-content: center;
-      padding: 0.65rem 0;
+      padding: var(--space-2) 0;
     }
 
     .toggle-btn {
@@ -83,16 +106,16 @@ const isCollapsed = ref(false)
   .sidebar-header {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 2rem;
-    padding: 0 0.5rem;
+    gap: var(--space-3);
+    margin-bottom: var(--space-8);
+    padding: 0 var(--space-2);
     height: 32px;
 
     .brand-logo {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: $primary;
+      color: var(--color-primary);
 
       .logo-icon {
         width: 24px;
@@ -103,23 +126,23 @@ const isCollapsed = ref(false)
     .brand-info {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--space-2);
       white-space: nowrap; /* Фикс переноса текста */
 
       .title {
         font-weight: 800;
         font-size: 1.1rem;
-        color: $text-main;
+        color: var(--color-text-main);
         letter-spacing: -0.02em;
       }
 
       .env-tag {
         font-size: 0.6rem;
         text-transform: uppercase;
-        background: $primary-light;
-        color: $primary;
-        padding: 0.15rem 0.4rem;
-        border-radius: 4px;
+        background: var(--color-primary-light);
+        color: var(--color-primary);
+        padding: var(--space-1) var(--space-1);
+        border-radius: var(--radius-xs);
         font-weight: 700;
       }
     }
@@ -133,10 +156,10 @@ const isCollapsed = ref(false)
       display: block;
       font-size: 0.65rem;
       font-weight: 800;
-      color: $text-muted;
+      color: var(--color-text-muted);
       letter-spacing: 0.08em;
-      margin-bottom: 0.5rem;
-      padding-left: 0.5rem;
+      margin-bottom: var(--space-2);
+      padding-left: var(--space-2);
       white-space: nowrap;
       overflow: hidden;
     }
@@ -144,14 +167,14 @@ const isCollapsed = ref(false)
     .nav-item {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      padding: 0.65rem 0.75rem;
-      border-radius: 8px;
-      color: #475569;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      color: var(--color-text-secondary);
       text-decoration: none;
       font-weight: 600;
       font-size: 0.875rem;
-      transition: all 0.15s ease;
+      transition: all var(--transition-fast);
       white-space: nowrap; /* КЛЮЧЕВОЙ ФИКС: Запрещает скачки текста в 2 строки */
       overflow: hidden;    /* Прячет вылезающий текст при схлопывании */
 
@@ -159,8 +182,8 @@ const isCollapsed = ref(false)
         width: 20px;
         height: 20px;
         min-width: 20px; /* Чтобы иконка не сжималась */
-        stroke: #64748b;
-        transition: stroke 0.15s ease;
+        stroke: var(--color-text-muted);
+        transition: stroke var(--transition-fast);
       }
 
       .label {
@@ -168,21 +191,21 @@ const isCollapsed = ref(false)
       }
 
       &:hover {
-        background: #f1f5f9;
-        color: $text-main;
+        background: var(--color-bg-secondary);
+        color: var(--color-text-main);
 
         .nav-icon {
-          stroke: $text-main;
+          stroke: var(--color-text-main);
         }
       }
 
       /* Активное состояние маршрута */
       &.router-link-active {
-        background: $primary;
-        color: #ffffff;
+        background: var(--color-primary);
+        color: var(--color-primary-contrast);
 
         .nav-icon {
-          stroke: #ffffff;
+          stroke: var(--color-primary-contrast);
         }
       }
     }
@@ -191,21 +214,21 @@ const isCollapsed = ref(false)
   /* 3. КНОПКА СВЕРНУТЬ */
   .toggle-btn {
     background: transparent;
-    border: 1px solid $border;
-    color: $text-muted;
-    border-radius: 6px;
-    padding: 0.4rem;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    border-radius: var(--radius-sm);
+    padding: var(--space-1);
     cursor: pointer;
     align-self: flex-end;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
 
     .toggle-icon {
       width: 16px;
       height: 16px;
-      transition: transform 0.25s ease;
+      transition: transform var(--transition-base);
 
       &.rotated {
         transform: rotate(180deg);
@@ -213,9 +236,59 @@ const isCollapsed = ref(false)
     }
 
     &:hover {
-      background: #f8fafc;
-      color: $text-main;
-      border-color: #cbd5e1;
+      background: var(--color-bg-secondary);
+      color: var(--color-text-main);
+      border-color: var(--color-border-strong);
+    }
+  }
+
+  /* 4. THEME TOGGLE */
+  .theme-toggle-section {
+    margin-top: auto;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+
+    .theme-toggle-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: var(--color-text-muted);
+      letter-spacing: 0.08em;
+      margin-bottom: var(--space-2);
+      padding-left: var(--space-2);
+    }
+
+    .theme-toggle-btn {
+      width: 100%;
+      height: 40px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-3);
+      padding: 0 var(--space-3);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+
+      .theme-icon {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        transition: transform var(--transition-base), opacity var(--transition-base);
+      }
+
+      &:hover {
+        background: var(--color-bg-secondary);
+        border-color: var(--color-border-strong);
+        color: var(--color-text-main);
+      }
+
+      &:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px var(--color-primary-light);
+      }
     }
   }
 }

@@ -238,7 +238,6 @@ onMounted(loadRequests)
 </script>
 
 <style lang="scss" scoped>
-@use "sass:color";
 @use "../styles/main.scss" as *;
 
 .page-container {
@@ -249,34 +248,34 @@ onMounted(loadRequests)
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-8);
 
     .header-text {
-      h1 { font-size: 1.5rem; font-weight: 800; color: $text-main; margin: 0; }
-      p { color: $text-muted; font-size: 0.9rem; margin: 0.25rem 0 0 0; }
+      h1 { font-size: 1.5rem; font-weight: 800; color: var(--color-text-main); margin: 0; }
+      p { color: var(--color-text-muted); font-size: 0.9rem; margin: var(--space-1) 0 0 0; }
     }
 
     .btn-create-primary {
-      background: $primary;
-      color: #ffffff;
+      background: var(--color-primary);
+      color: var(--color-primary-contrast);
       border: none;
-      padding: 0.65rem 1.25rem;
-      border-radius: 8px;
+      padding: var(--space-2) var(--space-5);
+      border-radius: var(--radius-md);
       font-weight: 700;
       font-size: 0.9rem;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--space-2);
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
-      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(var(--color-primary-rgb), 0.25);
+      transition: all var(--transition-base);
 
       .btn-icon { width: 18px; height: 18px; }
 
       &:hover {
-        background: color.adjust(#2563eb, $lightness: -5%);
+        background: var(--color-primary-hover);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+        box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.35);
       }
     }
   }
@@ -285,71 +284,80 @@ onMounted(loadRequests)
     .registry-header {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      margin-bottom: 1.25rem;
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
 
       .title-wrap {
-        h2 { font-size: 1.25rem; font-weight: 800; color: $text-main; margin: 0; }
+        h2 { font-size: 1.25rem; font-weight: 800; color: var(--color-text-main); margin: 0; }
       }
 
       .filters-bar {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 1.25rem;
-        background: #ffffff;
-        padding: 0.85rem 1.25rem;
-        border: 1px solid $border;
-        border-radius: 10px;
+        gap: var(--space-5);
+        background: var(--color-surface);
+        padding: var(--space-3) var(--space-5);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
 
         .filter-controls {
           display: flex;
           flex-wrap: wrap;
           align-items: center;
-          gap: 1.25rem;
+          gap: var(--space-5);
         }
 
         .filter-group {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: var(--space-2);
 
-          label { font-size: 0.8rem; font-weight: 700; color: $text-muted; }
+          label { font-size: 0.8rem; font-weight: 700; color: var(--color-text-muted); }
 
           .filter-input, .filter-select {
-            padding: 0.4rem 0.6rem;
-            border: 1px solid $border;
-            border-radius: 6px;
+            padding: var(--space-1) var(--space-2);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
             font-size: 0.85rem;
             outline: none;
-            color: $text-main;
-            &:focus { border-color: $primary; }
+            color: var(--color-text-main);
+            background: var(--color-surface);
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
+            &:focus { 
+              border-color: var(--color-border-focus);
+              box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.15);
+            }
           }
 
           .btn-quick-date {
-            background: #f1f5f9;
+            background: var(--color-bg-secondary);
             border: none;
-            padding: 0.4rem 0.75rem;
-            border-radius: 6px;
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-sm);
             font-size: 0.8rem;
             font-weight: 600;
-            color: $text-muted;
+            color: var(--color-text-muted);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all var(--transition-fast);
 
-            &:hover { background: #e2e8f0; }
-            &.active { background: $primary; color: #fff; }
+            &:hover { background: var(--color-bg-tertiary); }
+            &.active { 
+              background: var(--color-primary); 
+              color: var(--color-primary-contrast); 
+            }
           }
         }
 
         .count-badge {
           margin-left: auto;
-          background: #eff6ff;
-          color: $primary;
+          background: var(--color-primary-light);
+          color: var(--color-primary);
           font-size: 0.8rem;
           font-weight: 700;
-          padding: 0.35rem 0.75rem;
-          border-radius: 8px;
+          padding: var(--space-1) var(--space-3);
+          border-radius: var(--radius-full);
           white-space: nowrap;
         }
       }
@@ -363,7 +371,7 @@ onMounted(loadRequests)
   inset: 0;
   background: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(2px);
-  z-index: 1000;
+  z-index: var(--z-modal-backdrop);
   display: flex;
   justify-content: flex-end;
 }
@@ -372,20 +380,20 @@ onMounted(loadRequests)
   width: 100%;
   max-width: 520px;
   height: 100vh;
-  background: #ffffff;
-  box-shadow: -10px 0 25px rgba(0, 0, 0, 0.15);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xl);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 1.5rem;
+  padding: var(--space-6);
   box-sizing: border-box;
 }
 
 .drawer-enter-active,
 .drawer-leave-active {
-  transition: opacity 0.25s ease;
+  transition: opacity var(--transition-base);
   .drawer-content {
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform var(--transition-slow);
   }
 }
 
