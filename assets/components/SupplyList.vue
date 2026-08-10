@@ -13,13 +13,15 @@
 
     <!-- Список карточек -->
     <div v-else class="list-wrapper">
-      <SupplyItem 
-        v-for="item in requests" 
-        :key="item.id" 
-        :item="item" 
-        :isPendingDelete="pendingDeleteIds.includes(item.id)"
-        @delete="$emit('request-delete', $event)" 
-      />
+        <SupplyItem 
+          v-for="item in requests" 
+          :key="item.id" 
+          :item="item" 
+          :isPendingDelete="pendingDeleteIds.includes(item.id)"
+          @delete="$emit('request-delete', $event)" 
+          @duplicate="$emit('duplicate', $event)"
+        />
+
     </div>
   </div>
 </template>
@@ -42,7 +44,7 @@ defineProps({
   }
 })
 
-defineEmits(['request-delete'])
+defineEmits(['request-delete', 'duplicate'])
 </script>
 
 <style lang="scss" scoped>

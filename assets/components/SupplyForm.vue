@@ -153,6 +153,17 @@ const resetForm = () => {
   Object.assign(form, initialForm)
 }
 
+const populateFromTemplate = (data) => {
+  form.title = data.title || ''
+  form.object = data.object || ''
+  form.amount = data.quantity || data.amount || 1
+  form.unit = data.unit || 'тонны'
+  form.priority = data.priority || 'MEDIUM'
+  form.deliveryTimeStart = data.deliveryTimeStart || '09:00'
+  form.deliveryTimeEnd = data.deliveryTimeEnd || '12:00'
+  form.unloadingEquipment = !!data.unloadingEquipment
+}
+
 // Проверка корректности промежутка времени
 const timeError = computed(() => {
   if (!form.deliveryTimeStart || !form.deliveryTimeEnd) return ''
@@ -169,6 +180,8 @@ const timeError = computed(() => {
 const isSubmitDisabled = computed(() => {
   return !!timeError.value || !form.title || !form.object || !form.amount
 })
+
+defineExpose({ resetForm, populateFromTemplate })
 
 const handleSubmit = () => {
   if (isSubmitDisabled.value) return

@@ -56,16 +56,21 @@
         :requests="filteredRequests" 
         :loading="loading" 
         :pendingDeleteIds="pendingDelete ? [pendingDelete.id] : []"
-        @request-delete="initiateDelete" 
+        @request-delete="initiateDelete"
+        @duplicate="handleDuplicate"
       />
     </section>
 
     <!-- Выдвижная панель с формой (Drawer) -->
     <Teleport to="body">
       <Transition name="drawer">
-        <div v-if="isFormOpen" class="drawer-overlay" @click.self="isFormOpen = false">
+        <div v-if="isFormOpen" class="drawer-overlay" @click.self="closeForm">
           <div class="drawer-content">
-            <SupplyForm @create="handleCreate" @close="isFormOpen = false" />
+            <SupplyForm 
+              ref="supplyFormRef"
+              @create="handleCreate" 
+              @close="closeForm" 
+            />
           </div>
         </div>
       </Transition>
@@ -115,6 +120,25 @@ const getTodayString = () => {
 const requests = ref([])
 const loading = ref(false)
 const isFormOpen = ref(false)
+const supplyFormRef = ref(null)
+
+const closeForm = () => {
+  isFormOpen.value = false
+}
+
+const handleDuplicate = (item) => {
+  console.log('Duplicating item:', item);
+  isFormOpen.value = true
+  // Используем nextTick для гарантии того, что форма прорендерилась
+  setTimeout(() => {
+    if (supplyFormRef.value) {
+      console.log('Form ref found, populating...');
+      supplyFormRef.value.populateFromTemplate(item)
+    } else {
+      console.error('supplyFormRef is null')
+    }
+  }, 100)
+}
 const selectedDate = ref(getTodayString())
 const selectedPriority = ref('ALL')
 

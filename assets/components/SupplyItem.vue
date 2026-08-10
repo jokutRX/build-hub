@@ -15,7 +15,12 @@
         <span :class="['priority-badge', item.priority?.toLowerCase()]">
           {{ formatPriority(item.priority) }}
         </span>
-        <button class="btn-delete" title="Удалить" @click.stop="$emit('delete', item)">✕</button>
+        <button class="btn-duplicate" title="Дублировать" @click.stop="handleDuplicate">
+          <Copy :size="16" />
+        </button>
+        <button class="btn-delete" title="Удалить" @click.stop="$emit('delete', item)">
+          <Trash2 :size="16" />
+        </button>
       </div>
     </div>
 
@@ -219,19 +224,24 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { formatDate, formatUnit, pluralize } from '../utils/formatters.js'
+import { ChevronsLeft, ShoppingCart, Copy, Trash2, ChevronRight } from 'lucide-vue-next'
 
 const props = defineProps({
   item: { type: Object, required: true },
   isPendingDelete: { type: Boolean, default: false }
 })
 
-defineEmits(['delete'])
+const emit = defineEmits(['delete', 'duplicate'])
 
 const isExpanded = ref(false)
 const showCalcDetails = ref(false)
 
 const toggleExpand = () => {
   isExpanded.value = !isExpanded.value
+}
+
+const handleDuplicate = () => {
+  emit('duplicate', props.item)
 }
 
 // Форматирование количества с правильным склонением
@@ -420,21 +430,32 @@ const showCopyToast = (message, isError = false) => {
         &.low { background: var(--color-low-bg); color: var(--color-low); }
       }
 
-      .btn-delete {
-        background: transparent;
-        border: none;
-        color: var(--color-text-light);
-        font-size: 1.1rem;
-        cursor: pointer;
-        padding: var(--space-1) var(--space-2);
-        border-radius: var(--radius-xs);
-        transition: all var(--transition-fast);
+        .btn-delete, .btn-duplicate {
+          background: transparent;
+          border: none;
+          color: var(--color-text-light);
+          cursor: pointer;
+          padding: var(--space-1) var(--space-2);
+          border-radius: var(--radius-xs);
+          transition: all var(--transition-fast);
+          display: flex;
+          align-items: center;
+          justify-content: center;
 
-        &:hover {
+          &:hover {
+            background: var(--color-bg-secondary);
+          }
+        }
+
+        .btn-delete:hover {
           color: var(--color-critical);
           background: var(--color-critical-bg);
         }
-      }
+
+        .btn-duplicate:hover {
+          color: var(--color-primary);
+        }
+
     }
   }
 
