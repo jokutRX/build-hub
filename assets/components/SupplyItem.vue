@@ -128,20 +128,20 @@
                 </svg>
               </div>
               <div class="calc-card-content">
-                <span class="calc-card-label">Количество рейсов</span>
+                <span class="calc-card-label">Логистика</span>
                 <div class="trips-value-wrap">
                   <span class="calc-card-value accent">{{ calcData.tripsCount }}</span>
-                  <span class="trips-unit">рейс{{ tripsPlural }}</span>
+                  <span class="trips-unit">/ {{ calcData.estimatedCost }} ₽</span>
                 </div>
-                <div class="trips-visual" :style="{ '--trips': tripsNumber }" aria-label="{{ calcData.tripsCount }} рейсов">
+                <div class="trips-visual" :style="{ '--trips': tripsNumber }" aria-label="{{ calcData.tripsCount }}">
                   <span v-for="n in tripsNumber" :key="n" class="trip-dot"></span>
                 </div>
               </div>
               <button 
                 class="calc-card-action" 
-                @click.stop="copyToClipboard(calcData.tripsCount, 'Рейсы скопированы')"
-                title="Скопировать количество рейсов"
-                aria-label="Скопировать количество рейсов"
+                @click.stop="copyToClipboard(calcData.tripsCount + ' / ' + calcData.estimatedCost + ' руб', 'Данные скопированы')"
+                title="Скопировать расчёт"
+                aria-label="Скопировать расчёт"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -260,58 +260,52 @@ const formatPriority = (p) => {
   return map[p] || p
 }
 
-// Извлечение посчитанных данных из ответа бэкенда
-const calcData = computed(() => {
-  const c = props.item.calculation || props.item.calculationResult || props.item
-  const rawTrips = c.tripsCount || c.trips_count || c.trips
-  const rawWeight = c.calculatedAmount || c.calculated_amount
-  const rawVolume = c.volume || c.volume_m3
-  const density = c.density || c.material_density
-  const machinery = c.recommendedMachinery || c.recommended_machinery || c.machinery
-  const machineryCap = c.machineryCapacity || c.capacity || c.payload
-  
-  return {
-    calculatedAmount: rawWeight ? formatUnit(rawWeight, 'т') : null,
-    rawWeight: rawWeight ? Number(rawWeight).toFixed(2) : null,
-    recommendedMachinery: machinery || null,
-    machineryCapacity: machineryCap ? `${machineryCap} т` : null,
-    tripsCount: rawTrips ? `${rawTrips} рейс${pluralize(rawTrips, ['', 'а', 'ов'])}` : null,
-    tripsNumber: rawTrips ? Number(rawTrips) : 0,
-    note: c.note || c.calcNote || c.logistics_note || null,
-    comment: c.comment || null,
-    density: density ? Number(density).toFixed(2) : null,
-    volume: rawVolume ? Number(rawVolume).toFixed(2) : null,
-    unit: props.item.unit || null,
-    quantity: props.item.quantity || props.item.amount || null,
-    confidence: c.confidence || (rawWeight && machinery ? true : false)
-  }
-})
+    // Извлечение посчитанных данных из ответа бэкенда
+    const calcData = computed(() => {
+      const c = props.item.calculation || props.item.calculationResult || props.item
+      const rawTrips = c.tripsCount || c.trips_count || c.trips || 0
+      const rawWeight = c.calculatedAmount || c.calculated_amount
+      const rawVolume = c.volume || c.volume_m3
+      const density = c.density || c.material_density
+      const machinery = c.recommendedMachinery || c.recommended_machinery || c.machinery
+      const machineryCap = c.machineryCapacity || c.capacity || c.payload
+      
+      // Базовая экономика
+      const isHeavy = machineryCap && parseFloat(machineryCap) > 15
+      const pricePerTrip = isHeavy ? 7000 : 3000
+      const totalCost = rawTrips * pricePerTrip
+      
+      return {
+        calculatedAmount: rawWeight ? formatUnit(rawWeight, 'т') : null,
+        rawWeight: rawWeight ? Number(rawWeight).toFixed(2) : null,
+        recommendedMachinery: machinery || null,
+        machineryCapacity: machineryCap ? `${machineryCap} т` : null,
+        tripsCount: rawTrips ? `${rawTrips} рейс${pluralize(rawTrips, ['', 'а', 'ов'])}` : null,
+        tripsNumber: Number(rawTrips),
+        estimatedCost: totalCost.toLocaleString('ru-RU'),
+        note: c.note || c.calcNote || c.logistics_note || null,
+        comment: c.comment || null,
+        density: density ? Number(density).toFixed(2) : null,
+        volume: rawVolume ? Number(rawVolume).toFixed(2) : null,
+        unit: props.item.unit || null,
+        quantity: props.item.quantity || props.item.amount || null,
+        confidence: c.confidence || (rawWeight && machinery ? true : false)
+      }
+    })
 
 const hasCalculationData = computed(() => {
   return Object.values(calcData.value).some(val => val !== null && val !== undefined && val !== '')
 })
 
-// Склонение слова "рейс"
-const tripsPlural = computed(() => {
-  const n = calcData.value.tripsNumber
-  if (n % 10 === 1 && n % 100 !== 11) return ''
-  if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return 'а'
-  return 'ов'
-})
-
-const tripsNumber = computed(() => calcData.value.tripsNumber)
-
-// Копирование в буфер обмена с тостом
-const copyToClipboard = async (text, successMessage) => {
-  try {
-    await navigator.clipboard.writeText(text)
-    // Показываем временный тултип/уведомление
-    showCopyToast(successMessage)
-  } catch (err) {
-    console.error('Copy failed:', err)
-    showCopyToast('Не удалось скопировать', true)
-  }
-}
+    // Склонение слова "рейс"
+    const tripsPlural = computed(() => {
+      const n = calcData.value.tripsNumber
+      if (n % 10 === 1 && n % 100 !== 11) return ''
+      if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return 'а'
+      return 'ов'
+    })
+    
+    const tripsNumber = computed(() => calcData.value.tripsNumber)
 
 const showCopyToast = (message, isError = false) => {
   // Создаем временный элемент для уведомления

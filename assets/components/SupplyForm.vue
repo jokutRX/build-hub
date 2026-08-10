@@ -17,9 +17,10 @@
           required 
           class="form-input"
           @keyup.enter="handleSubmit"
+          autocomplete="off"
         />
       </div>
-
+ 
       <!-- Объект -->
       <div class="form-group">
         <label>Строительный объект *</label>
@@ -30,9 +31,10 @@
           required 
           class="form-input"
           @keyup.enter="handleSubmit"
+          autocomplete="off"
         />
       </div>
-
+ 
       <!-- Количество (Без стрелочек) и Единицы измерения -->
       <div class="form-row">
         <div class="form-group">
@@ -45,12 +47,13 @@
             required 
             class="form-input no-spinners"
             @keyup.enter="handleSubmit"
+            autocomplete="off"
           />
         </div>
-
+ 
         <div class="form-group">
           <label>Ед. измерения</label>
-          <select v-model="form.unit" class="form-select" @keyup.enter="handleSubmit">
+          <select v-model="form.unit" class="form-select" @keyup.enter="handleSubmit" autocomplete="off">
             <option value="тонны">тонны</option>
             <option value="шт">шт</option>
             <option value="м³">м³</option>
@@ -59,17 +62,17 @@
           </select>
         </div>
       </div>
-
+ 
       <!-- Приоритет -->
       <div class="form-group">
         <label>Приоритет</label>
-        <select v-model="form.priority" class="form-select" @keyup.enter="handleSubmit">
+        <select v-model="form.priority" class="form-select" @keyup.enter="handleSubmit" autocomplete="off">
           <option value="CRITICAL">Критичный</option>
           <option value="MEDIUM">Средний</option>
           <option value="LOW">Низкий</option>
         </select>
       </div>
-
+ 
       <!-- Окно доставки (24-часовой формат, step=60) -->
       <div class="form-row">
         <div class="form-group">
@@ -80,9 +83,10 @@
             step="60"
             class="form-input"
             @keyup.enter="handleSubmit"
+            autocomplete="off"
           />
         </div>
-
+ 
         <div class="form-group">
           <label>Время доставки ДО</label>
           <input 
@@ -91,6 +95,7 @@
             step="60"
             :class="['form-input', { 'input-error': !!timeError }]"
             @keyup.enter="handleSubmit"
+            autocomplete="off"
           />
         </div>
       </div>

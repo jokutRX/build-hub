@@ -26,7 +26,7 @@
           <div class="filter-controls">
             <div class="filter-group">
               <label>Дата поставки:</label>
-              <input type="date" v-model="selectedDate" class="filter-input" />
+              <input type="date" v-model="selectedDate" class="filter-input" autocomplete="off" />
               <button :class="['btn-quick-date', { active: isTodaySelected }]" @click="setToday">
                 Сегодня
               </button>
@@ -37,7 +37,7 @@
 
             <div class="filter-group">
               <label>Приоритет:</label>
-              <select v-model="selectedPriority" class="filter-select">
+              <select v-model="selectedPriority" class="filter-select" autocomplete="off">
                 <option value="ALL">Все приоритеты</option>
                 <option value="CRITICAL">Критичный</option>
                 <option value="MEDIUM">Средний</option>
