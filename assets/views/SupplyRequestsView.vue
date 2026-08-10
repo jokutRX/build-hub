@@ -56,10 +56,30 @@
         :requests="filteredRequests" 
         :loading="loading" 
         :pendingDeleteIds="pendingDelete ? [pendingDelete.id] : []"
+        :selectedIds="selectedIds"
         @request-delete="initiateDelete"
         @duplicate="handleDuplicate"
+        @select-item="toggleSelect"
       />
     </section>
+
+    <!-- Плавающая панель выбора -->
+    <Transition name="bulk-bar">
+      <div v-if="selectedIds.size > 0" class="bulk-floating-bar">
+        <div class="bulk-info">
+          <span class="count">{{ selectedIds.size }} выбрано</span>
+          <button class="close-btn" @click="selectedIds.clear()">✕</button>
+        </div>
+        <div class="bulk-actions">
+          <button class="btn-bulk" @click="bulkAction('IN_TRANSIT')">В доставку</button>
+          <button class="btn-bulk" @click="bulkAction('COMPLETED')">Завершить</button>
+          <button class="btn-bulk-primary" @click="mergeRequests">Объединить в рейс</button>
+        </div>
+        <div class="bulk-total">
+          Итого: {{ totalWeight }} т ({{ totalCost }} ₽)
+        </div>
+      </div>
+    </Transition>
 
     <!-- Выдвижная панель с формой (Drawer) -->
     <Teleport to="body">
@@ -127,15 +147,10 @@ const closeForm = () => {
 }
 
 const handleDuplicate = (item) => {
-  console.log('Duplicating item:', item);
   isFormOpen.value = true
-  // Используем nextTick для гарантии того, что форма прорендерилась
   setTimeout(() => {
     if (supplyFormRef.value) {
-      console.log('Form ref found, populating...');
       supplyFormRef.value.populateFromTemplate(item)
-    } else {
-      console.error('supplyFormRef is null')
     }
   }, 100)
 }
@@ -161,6 +176,24 @@ const showToast = (title, message, type = 'success') => {
 
 const isTodaySelected = computed(() => selectedDate.value === getTodayString())
 const setToday = () => { selectedDate.value = getTodayString() }
+
+const selectedIds = ref(new Set())
+const lastSelectedIndex = ref(null)
+
+const toggleSelect = (item, index, event) => {
+  if (event.shiftKey && lastSelectedIndex.value !== null) {
+    const start = Math.min(index, lastSelectedIndex.value)
+    const end = Math.max(index, lastSelectedIndex.value)
+    
+    for (let i = start; i <= end; i++) {
+      const id = filteredRequests.value[i].id
+      selectedIds.value.has(id) ? selectedIds.value.delete(id) : selectedIds.value.add(id)
+    }
+  } else {
+    selectedIds.value.has(item.id) ? selectedIds.value.delete(item.id) : selectedIds.value.add(item.id)
+  }
+  lastSelectedIndex.value = index
+}
 
 const loadRequests = async () => {
   loading.value = true
@@ -189,10 +222,39 @@ const filteredRequests = computed(() => {
 })
 
 // Склонение слова "позиция" для баджа
-const formattedPositionsCount = computed(() => {
-  const count = filteredRequests.value.length
-  return `${count} ${pluralize(count, ['позиция', 'позиции', 'позиций'])}`
+const totalWeight = computed(() => {
+  return requests.value
+    .filter(item => selectedIds.value.has(item.id))
+    .reduce((sum, item) => sum + (item.quantity || 0), 0)
+    .toFixed(2)
 })
+
+const totalCost = computed(() => {
+  return requests.value
+    .filter(item => selectedIds.value.has(item.id))
+    .reduce((sum, item) => {
+      // Пример упрощенного пересчета экономики
+      const price = (item.quantity > 15) ? 7000 : 3000
+      return sum + price
+    }, 0)
+    .toLocaleString('ru-RU')
+})
+
+const bulkAction = (status) => {
+  console.log(`Performing bulk action ${status} for IDs:`, Array.from(selectedIds.value))
+  selectedIds.value.clear()
+}
+
+const mergeRequests = () => {
+  const selected = requests.value.filter(i => selectedIds.value.has(i.id))
+  const firstObject = selected[0].object
+  if (!selected.every(i => i.object === firstObject)) {
+    showToast('Ошибка', 'Объединение возможно только для одного объекта', 'error')
+    return
+  }
+  console.log('Merging:', selected)
+  selectedIds.value.clear()
+}
 
 /* --- СОЗДАНИЕ ЗАЯВКИ --- */
 const handleCreate = async (newRequestData, resetFormCallback) => {
@@ -260,6 +322,7 @@ const confirmDelete = async () => {
 
 onMounted(loadRequests)
 </script>
+
 
 <style lang="scss" scoped>
 @use "../styles/main.scss" as *;
@@ -394,7 +457,86 @@ onMounted(loadRequests)
     }
   }
 
-/* Стили выкатной панели Drawer */
+/* Стили плавающей панели выбора */
+.bulk-floating-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-main);
+  padding: 10px 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+
+  .bulk-info { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    font-weight: 700; 
+    font-size: 0.9rem;
+  }
+  
+  .close-btn {
+    background: var(--color-bg-secondary);
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    transition: all var(--transition-fast);
+
+    &:hover {
+      background: var(--color-critical-bg);
+      color: var(--color-critical);
+    }
+  }
+
+  .bulk-actions { display: flex; gap: 8px; }
+  .btn-bulk { 
+    background: var(--color-bg-secondary); 
+    border: 1px solid var(--color-border); 
+    color: var(--color-text-secondary); 
+    padding: 6px 12px; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-weight: 600;
+    font-size: 0.85rem;
+    
+    &:hover { background: var(--color-bg-tertiary); color: var(--color-text-main); }
+  }
+  .btn-bulk-primary { 
+    background: var(--color-primary); 
+    border: none; 
+    color: var(--color-primary-contrast); 
+    padding: 6px 12px; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+  
+  .bulk-total {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    padding-left: 10px;
+    border-left: 1px solid var(--color-border);
+  }
+}
+
+.bulk-bar-enter-active, .bulk-bar-leave-active { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.bulk-bar-enter-from, .bulk-bar-leave-to { opacity: 0; transform: translate(-50%, 20px); }
+
 .drawer-overlay {
   position: fixed;
   inset: 0;

@@ -1,14 +1,20 @@
 <template>
   <div :class="['supply-card', { expanded: isExpanded, 'pending-delete': isPendingDelete }]">
     <!-- Шапка карточки (Кликабельная) -->
-    <div class="card-header" @click="toggleExpand">
+    <div class="card-header">
       <div class="header-left">
-        <span :class="['arrow-icon', { rotated: isExpanded }]">›</span>
-        <h3 class="title">{{ item.title }}</h3>
-        <span class="site-badge">{{ item.site || item.object }}</span>
+        <input 
+          type="checkbox" 
+          class="row-checkbox" 
+          :checked="selected" 
+          @click.stop="$emit('select', $event)" 
+        />
+        <span :class="['arrow-icon', { rotated: isExpanded }]" @click="toggleExpand">›</span>
+        <h3 class="title" @click="toggleExpand">{{ item.title }}</h3>
+        <span class="site-badge" @click="toggleExpand">{{ item.site || item.object }}</span>
       </div>
 
-      <div class="header-right">
+      <div class="header-right" @click="toggleExpand">
         <!-- Склонение количества и единиц (1 тонна / 100 тонн) -->
         <span class="quantity">{{ displayQuantity }}</span>
 
@@ -228,10 +234,11 @@ import { ChevronsLeft, ShoppingCart, Copy, Trash2, ChevronRight } from 'lucide-v
 
 const props = defineProps({
   item: { type: Object, required: true },
-  isPendingDelete: { type: Boolean, default: false }
+  isPendingDelete: { type: Boolean, default: false },
+  selected: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['delete', 'duplicate'])
+const emit = defineEmits(['delete', 'duplicate', 'select'])
 
 const isExpanded = ref(false)
 const showCalcDetails = ref(false)
@@ -377,6 +384,14 @@ const showCopyToast = (message, isError = false) => {
       display: flex;
       align-items: center;
       gap: var(--space-3);
+
+      .row-checkbox {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: var(--color-primary);
+        margin: 0;
+      }
 
       .arrow-icon {
         font-size: 1.25rem;
