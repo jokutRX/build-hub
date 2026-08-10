@@ -3,17 +3,18 @@
     <div class="header-left">
       <h2 class="logo">BuildHub</h2>
       <button class="menu-btn" @click="$emit('toggle-sidebar')" title="Меню">
-        <span class="icon">≡</span>
+        <Menu :size="20" />
       </button>
     </div>
     <div class="header-right">
       <button class="icon-btn" @click="toggleTheme" title="Переключить тему">
-        <span class="icon">{{ isDark ? '◓' : '◒' }}</span>
+        <Moon v-if="isDark" :size="20" />
+        <Sun v-else :size="20" />
       </button>
 
       <div class="color-picker-container" ref="pickerRef">
         <button class="icon-btn" @click="isOpen = !isOpen" title="Цветовая схема">
-          <span class="icon">⌗</span>
+          <Palette :size="20" />
         </button>
         <div v-if="isOpen" class="color-dropdown">
           <p class="dropdown-title">Выберите цветовую тему</p>
@@ -41,6 +42,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useTheme } from '../composables/useTheme'
+import { Menu, Moon, Sun, Palette } from 'lucide-vue-next'
 
 const { isDark, toggleTheme, colorTheme, setColorTheme, COLOR_PRESETS } = useTheme()
 const isOpen = ref(false)
@@ -85,8 +87,6 @@ onUnmounted(() => document.removeEventListener('click', closePicker))
   justify-content: center;
   transition: all var(--transition-fast);
   color: var(--color-text-main);
-  font-size: 1.25rem;
-  font-weight: 800;
 
   &:hover {
     background-color: var(--color-bg-tertiary);
@@ -122,11 +122,6 @@ onUnmounted(() => document.removeEventListener('click', closePicker))
   &:hover {
     background-color: var(--color-bg-secondary);
     border-color: var(--color-border-strong);
-  }
-
-  .icon {
-    font-size: 1.25rem;
-    line-height: 1;
   }
 }
 

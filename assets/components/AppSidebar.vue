@@ -15,33 +15,22 @@
         <span v-if="!isCollapsed" class="group-title">СНАБЖЕНИЕ</span>
         
         <router-link to="/requests" class="nav-item" title="Заявки на закупку">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 8L12 3 3 8v8l9 5 9-5V8z" />
-            <path d="M3 8l9 5 9-5" />
-            <path d="M12 13v9" />
-          </svg>
-          <span v-if="!isCollapsed" class="label">Заявки на закупку</span>
+          <ShoppingCart class="nav-icon" :size="20" />
+          <span v-if="!isCollapsed" class="label">Заявки</span>
         </router-link>
       </div>
     </nav>
 
     <!-- Toggle Button -->
     <button class="toggle-btn" @click="toggleSidebar">
-      <svg class="toggle-icon" :class="{ rotated: isCollapsed }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M15 18l-6-6 6-6" />
-      </svg>
-    </button>
-    <!-- Toggle Button -->
-    <button class="toggle-btn" @click="toggleSidebar">
-      <svg class="toggle-icon" :class="{ rotated: isCollapsed }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M13 17l5-5-5-5M6 17l5-5-5-5" />
-      </svg>
+      <ChevronsLeft class="toggle-icon" :class="{ rotated: isCollapsed }" :size="16" />
     </button>
   </aside>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import { ChevronsLeft, ShoppingCart } from 'lucide-vue-next'
 
 const isCollapsed = ref(false)
 
@@ -154,8 +143,8 @@ defineExpose({ toggleSidebar })
         width: 20px;
         height: 20px;
         min-width: 20px;
-        stroke: var(--color-text-muted);
-        transition: stroke var(--transition-fast);
+        color: var(--color-text-muted);
+        transition: color var(--transition-fast);
       }
 
       .label {
@@ -167,7 +156,7 @@ defineExpose({ toggleSidebar })
         color: var(--color-text-main);
 
         .nav-icon {
-          stroke: var(--color-text-main);
+          color: var(--color-text-main);
         }
       }
 
@@ -176,13 +165,13 @@ defineExpose({ toggleSidebar })
         color: var(--color-primary-contrast);
 
         .nav-icon {
-          stroke: var(--color-primary-contrast);
+          color: var(--color-primary-contrast);
         }
       }
     }
   }
 
-  /* 3. КНОПКА СВЕРНУТЬ (Теперь фиксированная внизу) */
+  /* 3. КНОПКА СВЕРНУТЬ */
   .toggle-btn {
     position: absolute;
     bottom: var(--space-5);
@@ -202,8 +191,6 @@ defineExpose({ toggleSidebar })
     box-shadow: var(--shadow-sm);
 
     .toggle-icon {
-      width: 16px;
-      height: 16px;
       transition: transform var(--transition-base);
 
       &.rotated {
