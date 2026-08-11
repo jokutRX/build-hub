@@ -11,7 +11,7 @@
         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path d="M12 5v14M5 12h14" />
         </svg>
-        <span>Создать заявку</span>
+        <span>Создать</span>
       </button>
     </header>
 
@@ -46,7 +46,7 @@
             </div>
           </div>
 
-          <!-- Динамический счетчик позиций с правильным склонением -->
+          <!-- Динамический счетчик позиций -->
           <span class="count-badge">{{ formattedPositionsCount }}</span>
         </div>
       </div>
@@ -73,7 +73,7 @@
         <div class="bulk-actions">
           <button class="btn-bulk" @click="bulkAction('IN_TRANSIT')">В доставку</button>
           <button class="btn-bulk" @click="bulkAction('COMPLETED')">Завершить</button>
-          <button class="btn-bulk-primary" @click="mergeRequests">Объединить в рейс</button>
+          <button class="btn-bulk-primary" @click="mergeRequests">⚡ Объединить в рейс</button>
         </div>
         <div class="bulk-total">
           Итого: {{ totalWeight }} т ({{ totalCost }} ₽)
@@ -128,7 +128,6 @@ import SupplyList from '../components/SupplyList.vue'
 import ToastNotification from '../components/ToastNotification.vue'
 import DeleteUndoToast from '../components/DeleteUndoToast.vue'
 
-// Функция локальной даты YYYY-MM-DD (без сдвига по UTC)
 const getTodayString = () => {
   const date = new Date()
   const year = date.getFullYear()
@@ -154,10 +153,9 @@ const handleDuplicate = (item) => {
     }
   }, 100)
 }
+
 const selectedDate = ref(getTodayString())
 const selectedPriority = ref('ALL')
-
-// Состояние отложенного удаления (Telegram Undo)
 const pendingDelete = ref(null)
 
 const toast = reactive({
@@ -181,39 +179,27 @@ const selectedIds = ref(new Set())
 const lastSelectedIndex = ref(null)
 
 const toggleSelect = (item, index, event) => {
-  if (event.shiftKey && lastSelectedIndex.value !== null) {
+  if (event && event.shiftKey && lastSelectedIndex.value !== null) {
     const start = Math.min(index, lastSelectedIndex.value)
     const end = Math.max(index, lastSelectedIndex.value)
     
     for (let i = start; i <= end; i++) {
-      const id = filteredRequests.value[i].id
-      selectedIds.value.has(id) ? selectedIds.value.delete(id) : selectedIds.value.add(id)
+      const id = filteredRequests.value[i]?.id
+      if (id) selectedIds.value.add(id)
     }
   } else {
-    selectedIds.value.has(item.id) ? selectedIds.value.delete(item.id) : selectedIds.value.add(item.id)
+    if (selectedIds.value.has(item.id)) {
+      selectedIds.value.delete(item.id)
+    } else {
+      selectedIds.value.add(item.id)
+    }
   }
   lastSelectedIndex.value = index
 }
 
-const loadRequests = async () => {
-  loading.value = true
-  try {
-    requests.value = await supplyApi.getAll()
-  } catch (err) {
-    console.error('Ошибка загрузки заявок:', err)
-    showToast('Ошибка загрузки', 'Не удалось получить список заявок с сервера', 'error')
-  } finally {
-    loading.value = false
-  }
-}
-
-// Фильтрация списка заявок (моментально скрывает элемент при подготовке к удалению)
 const filteredRequests = computed(() => {
   return requests.value.filter(item => {
-    if (pendingDelete.value && item.id === pendingDelete.value.id) {
-      return false
-    }
-
+    if (pendingDelete.value && item.id === pendingDelete.value.id) return false
     const itemDate = item.createdAt ? item.createdAt.split('T')[0] : item.date
     const matchesDate = !selectedDate.value || itemDate === selectedDate.value
     const matchesPriority = selectedPriority.value === 'ALL' || item.priority === selectedPriority.value
@@ -221,7 +207,11 @@ const filteredRequests = computed(() => {
   })
 })
 
-// Склонение слова "позиция" для баджа
+const formattedPositionsCount = computed(() => {
+  const count = filteredRequests.value.length
+  return `${count} ${pluralize(count, ['позиция', 'позиции', 'позиций'])}`
+})
+
 const totalWeight = computed(() => {
   return requests.value
     .filter(item => selectedIds.value.has(item.id))
@@ -233,7 +223,6 @@ const totalCost = computed(() => {
   return requests.value
     .filter(item => selectedIds.value.has(item.id))
     .reduce((sum, item) => {
-      // Пример упрощенного пересчета экономики
       const price = (item.quantity > 15) ? 7000 : 3000
       return sum + price
     }, 0)
@@ -241,22 +230,26 @@ const totalCost = computed(() => {
 })
 
 const bulkAction = (status) => {
-  console.log(`Performing bulk action ${status} for IDs:`, Array.from(selectedIds.value))
+  showToast('Успешно', `Статус ${status} применен к ${selectedIds.value.size} заявкам`)
   selectedIds.value.clear()
 }
 
 const mergeRequests = () => {
   const selected = requests.value.filter(i => selectedIds.value.has(i.id))
-  const firstObject = selected[0].object
-  if (!selected.every(i => i.object === firstObject)) {
+  if (selected.length === 0) return
+
+  const firstObject = selected[0].object || selected[0].site
+  const isSameObject = selected.every(i => (i.object || i.site) === firstObject)
+
+  if (!isSameObject) {
     showToast('Ошибка', 'Объединение возможно только для одного объекта', 'error')
     return
   }
-  console.log('Merging:', selected)
+  
+  showToast('Рейс сформирован', `Заявки объединены в 1 рейс. Вес: ${totalWeight.value} т`, 'success')
   selectedIds.value.clear()
 }
 
-/* --- СОЗДАНИЕ ЗАЯВКИ --- */
 const handleCreate = async (newRequestData, resetFormCallback) => {
   try {
     await supplyApi.create({
@@ -271,193 +264,175 @@ const handleCreate = async (newRequestData, resetFormCallback) => {
       deliveryTimeEnd: newRequestData.deliveryTimeEnd,
       unloadingEquipment: newRequestData.unloadingEquipment
     })
-
     await loadRequests()
-    
-    // Сбрасываем форму и закрываем Drawer при успешном создании
-    if (typeof resetFormCallback === 'function') {
-      resetFormCallback()
-    }
+    if (typeof resetFormCallback === 'function') resetFormCallback()
     isFormOpen.value = false
-
     showToast('Заявка создана!', `Позиция "${newRequestData.title}" добавлена в реестр.`, 'success')
   } catch (err) {
-    console.error('Ошибка создания:', err)
-    // Пробрасываем точечное сообщение об ошибке с бэкенда
     showToast('Ошибка сохранения', err.message || 'Не удалось сохранить заявку', 'error')
   }
 }
 
-/* --- TELEGRAM UNDO DELETE --- */
 const initiateDelete = (item) => {
-  // Если у нас уже был кандидат на удаление, подтверждаем его перед запуском нового
-  if (pendingDelete.value) {
-    confirmDelete()
-  }
+  if (pendingDelete.value) confirmDelete()
   pendingDelete.value = item
 }
 
-const cancelDelete = () => {
-  pendingDelete.value = null
-}
+const cancelDelete = () => { pendingDelete.value = null }
 
 const confirmDelete = async () => {
   if (!pendingDelete.value) return
-
   const itemToDelete = pendingDelete.value
-
   try {
     await supplyApi.delete(itemToDelete.id)
     await loadRequests()
   } catch (err) {
-    console.error('Ошибка при удалении:', err)
-    showToast('Ошибка удаления', err.message || 'Не удалось удалить заявку с сервера', 'error')
+    showToast('Ошибка удаления', 'Не удалось удалить заявку', 'error')
     await loadRequests()
   } finally {
-    if (pendingDelete.value?.id === itemToDelete.id) {
-      pendingDelete.value = null
-    }
+    if (pendingDelete.value?.id === itemToDelete.id) pendingDelete.value = null
+  }
+}
+
+const loadRequests = async () => {
+  loading.value = true
+  try {
+    requests.value = await supplyApi.getAll()
+  } catch (err) {
+    showToast('Ошибка загрузки', 'Не удалось получить список заявок', 'error')
+  } finally {
+    loading.value = false
   }
 }
 
 onMounted(loadRequests)
 </script>
 
-
 <style lang="scss" scoped>
 @use "../styles/main.scss" as *;
 
-  .page-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: var(--space-8) var(--space-6);
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6);
 
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-10);
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-10);
 
-      .header-text {
-        h1 { font-size: 1.8rem; font-weight: 800; color: var(--color-text-main); margin: 0; }
-        p { color: var(--color-text-muted); font-size: 1rem; margin: var(--space-2) 0 0 0; }
-      }
-
-      .btn-create-primary {
-        background: var(--color-primary);
-        color: var(--color-primary-contrast);
-        border: none;
-        padding: var(--space-3) var(--space-6);
-        border-radius: var(--radius-lg);
-        font-weight: 700;
-        font-size: 1rem;
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.25);
-        transition: all var(--transition-base);
-
-        .btn-icon { width: 20px; height: 20px; }
-
-        &:hover {
-          background: var(--color-primary-hover);
-          transform: translateY(-2px);
-          box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.35);
-        }
-      }
+    .header-text {
+      h1 { font-size: 1.8rem; font-weight: 800; color: var(--color-text-main); margin: 0; }
+      p { color: var(--color-text-muted); font-size: 1rem; margin: var(--space-2) 0 0 0; }
     }
 
-    .registry-section {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-xl);
-      padding: var(--space-6);
+    .btn-create-primary {
+      background: var(--color-primary);
+      color: var(--color-primary-contrast);
+      border: none;
+      padding: var(--space-3) var(--space-6);
+      border-radius: var(--radius-lg);
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.25);
+      transition: all var(--transition-base);
 
-      .registry-header {
+      .btn-icon { width: 18px; height: 18px; }
+
+      &:hover {
+        background: var(--color-primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.35);
+      }
+    }
+  }
+
+  .registry-section {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+
+    .registry-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-6);
+      margin-bottom: var(--space-6);
+
+      .title-wrap {
+        h2 { font-size: 1.5rem; font-weight: 800; color: var(--color-text-main); margin: 0; }
+      }
+
+      .filters-bar {
         display: flex;
         align-items: center;
-        justify-content: space-between;
         gap: var(--space-6);
-        margin-bottom: var(--space-6);
+        background: var(--color-bg-secondary);
+        padding: var(--space-2) var(--space-4);
+        border-radius: var(--radius-lg);
 
-        .title-wrap {
-          h2 { font-size: 1.5rem; font-weight: 800; color: var(--color-text-main); margin: 0; }
+        .count-badge {
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: var(--color-primary);
+          background: rgba(var(--color-primary-rgb), 0.1);
+          padding: 4px 10px;
+          border-radius: var(--radius-md);
         }
 
-        .filters-bar {
+        .filter-controls {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: var(--space-4);
+        }
+
+        .filter-group {
           display: flex;
           align-items: center;
-          gap: var(--space-6);
-          background: var(--color-bg-secondary);
-          padding: var(--space-2) var(--space-4);
-          border-radius: var(--radius-lg);
+          gap: var(--space-3);
 
-          .filter-controls {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: var(--space-4);
+          label { font-size: 0.85rem; font-weight: 700; color: var(--color-text-muted); }
+
+          .filter-input, .filter-select {
+            padding: var(--space-2) var(--space-3);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            outline: none;
+            color: var(--color-text-main);
+            background: var(--color-surface);
+            transition: all var(--transition-fast);
           }
 
-          .filter-group {
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-
-            label { font-size: 0.85rem; font-weight: 700; color: var(--color-text-muted); }
-
-            .filter-input, .filter-select {
-              padding: var(--space-2) var(--space-3);
-              border: 1px solid var(--color-border);
-              border-radius: var(--radius-md);
-              font-size: 0.9rem;
-              outline: none;
-              color: var(--color-text-main);
-              background: var(--color-surface);
-              transition: all var(--transition-fast);
-
-              &:focus { 
-                border-color: var(--color-primary);
-                box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.1);
-              }
-            }
-
-            .btn-quick-date {
-              background: var(--color-surface);
-              border: 1px solid var(--color-border);
-              padding: var(--space-2) var(--space-4);
-              border-radius: var(--radius-md);
-              font-size: 0.85rem;
-              font-weight: 600;
-              color: var(--color-text-muted);
-              cursor: pointer;
-              transition: all var(--transition-fast);
-
-              &:hover { background: var(--color-bg-secondary); border-color: var(--color-text-muted); }
-              &.active { 
-                background: var(--color-primary); 
-                color: var(--color-primary-contrast); 
-                border-color: var(--color-primary);
-              }
-            }
-          }
-
-          .count-badge {
-            background: var(--color-primary-light);
-            color: var(--color-primary);
-            font-size: 0.85rem;
-            font-weight: 700;
+          .btn-quick-date {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
             padding: var(--space-2) var(--space-4);
-            border-radius: var(--radius-full);
-            white-space: nowrap;
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            
+            &.active {
+              background: var(--color-primary);
+              color: var(--color-primary-contrast);
+              border-color: var(--color-primary);
+            }
           }
         }
       }
     }
   }
+}
 
-/* Стили плавающей панели выбора */
 .bulk-floating-bar {
   position: fixed;
   bottom: 24px;
@@ -473,70 +448,39 @@ onMounted(loadRequests)
   gap: 20px;
   box-shadow: var(--shadow-lg);
   z-index: 1000;
-
-  .bulk-info { 
-    display: flex; 
-    align-items: center; 
-    gap: 12px; 
-    font-weight: 700; 
+  
+  .bulk-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
     font-size: 0.9rem;
   }
-  
+
   .close-btn {
     background: var(--color-bg-secondary);
     border: none;
     width: 24px;
     height: 24px;
     border-radius: 50%;
+    cursor: pointer;
+    color: var(--color-text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    color: var(--color-text-muted);
-    transition: all var(--transition-fast);
-
-    &:hover {
-      background: var(--color-critical-bg);
-      color: var(--color-critical);
-    }
+    &:hover { background: var(--color-critical-bg); color: var(--color-critical); }
   }
 
   .bulk-actions { display: flex; gap: 8px; }
-  .btn-bulk { 
-    background: var(--color-bg-secondary); 
-    border: 1px solid var(--color-border); 
-    color: var(--color-text-secondary); 
-    padding: 6px 12px; 
-    border-radius: 6px; 
-    cursor: pointer; 
-    font-weight: 600;
-    font-size: 0.85rem;
-    
-    &:hover { background: var(--color-bg-tertiary); color: var(--color-text-main); }
-  }
-  .btn-bulk-primary { 
-    background: var(--color-primary); 
-    border: none; 
-    color: var(--color-primary-contrast); 
-    padding: 6px 12px; 
-    border-radius: 6px; 
-    cursor: pointer; 
-    font-weight: 600;
-    font-size: 0.85rem;
-  }
-  
-  .bulk-total {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--color-primary);
-    padding-left: 10px;
-    border-left: 1px solid var(--color-border);
-  }
+  .btn-bulk { background: var(--color-bg-secondary); border: 1px solid var(--color-border); color: var(--color-text-secondary); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+  .btn-bulk-primary { background: var(--color-primary); border: none; color: var(--color-primary-contrast); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 700; }
+  .bulk-total { font-size: 0.85rem; font-weight: 700; color: var(--color-primary); padding-left: 10px; border-left: 1px solid var(--color-border); }
 }
 
 .bulk-bar-enter-active, .bulk-bar-leave-active { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
 .bulk-bar-enter-from, .bulk-bar-leave-to { opacity: 0; transform: translate(-50%, 20px); }
 
+/* Выдвижная панель (Drawer) */
 .drawer-overlay {
   position: fixed;
   inset: 0;
@@ -560,17 +504,20 @@ onMounted(loadRequests)
   box-sizing: border-box;
 }
 
+/* Стили для плавной анимации выдвижения */
 .drawer-enter-active,
 .drawer-leave-active {
-  transition: opacity var(--transition-base);
+  transition: opacity 0.3s ease;
+
   .drawer-content {
-    transition: transform var(--transition-slow);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
 .drawer-enter-from,
 .drawer-leave-to {
   opacity: 0;
+
   .drawer-content {
     transform: translateX(100%);
   }
