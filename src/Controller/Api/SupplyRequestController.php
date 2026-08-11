@@ -19,9 +19,23 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class SupplyRequestController extends AbstractController
 {
     #[Route('', methods: ['GET'])]
-    public function index(SupplyRequestRepository $repository): JsonResponse
+    public function index(Request $request, SupplyRequestRepository $repository): JsonResponse
     {
-        $requests = $repository->findBy([], ['createdAt' => 'DESC']);
+        $dateParam = $request->query->get('date');
+
+        if ($dateParam) {
+            try {
+                $date = new \DateTimeImmutable($dateParam);
+                $requests = $repository->findByDate($date);
+            } catch (\Exception $e) {
+                // В случае невалидной даты отдаем последние 100 записей
+                $requests = $repository->findBy([], ['createdAt' => 'DESC'], 100);
+            }
+        } else {
+            // Ограничиваем выборку 100 записями по умолчанию
+            $requests = $repository->findBy([], ['createdAt' => 'DESC'], 100);
+        }
+
         return $this->json($requests);
     }
 
