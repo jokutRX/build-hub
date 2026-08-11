@@ -3,40 +3,92 @@
     <!-- Header / Brand -->
     <div class="sidebar-header">
       <div class="brand-wrapper">
-        <transition name="fade">
-          <span v-if="!isCollapsed" class="menu-label">Меню</span>
-        </transition>
+        <span class="menu-label">МЕНЮ</span>
       </div>
     </div>
 
     <!-- Navigation -->
     <nav class="sidebar-nav">
-      <div class="nav-group">
-        <span v-if="!isCollapsed" class="group-title">СНАБЖЕНИЕ</span>
-        
-        <router-link to="/requests" class="nav-item" title="Заявки на закупку">
-          <ShoppingCart class="nav-icon" :size="20" />
-          <span v-if="!isCollapsed" class="label">Заявки</span>
-        </router-link>
-      </div>
+      <template v-for="(group, index) in navGroups" :key="group.title">
+        <div class="nav-group">
+          <span class="group-title">{{ group.title }}</span>
+          
+          <router-link 
+            v-for="item in group.items" 
+            :key="item.to" 
+            :to="item.to" 
+            class="nav-item" 
+            :title="isCollapsed ? item.label : ''"
+          >
+            <component :is="item.icon" class="nav-icon" :size="20" />
+            <span class="label">{{ item.label }}</span>
+          </router-link>
+        </div>
+
+        <!-- Разделительная черта между группами -->
+        <hr v-if="index < navGroups.length - 1" class="nav-divider" />
+      </template>
     </nav>
 
-    <!-- Toggle Button -->
-    <button class="toggle-btn" @click="toggleSidebar">
-      <ChevronsLeft class="toggle-icon" :class="{ rotated: isCollapsed }" :size="16" />
-    </button>
+    <!-- Footer Version Info -->
+    <div class="sidebar-footer">
+      <span class="version-text">v1.0.0 — BuildHub ERP</span>
+    </div>
   </aside>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { ChevronsLeft, ShoppingCart } from 'lucide-vue-next'
+import { 
+  LayoutDashboard, 
+  ShoppingCart, 
+  FileText, 
+  Users, 
+  Boxes, 
+  ArrowLeftRight, 
+  Receipt, 
+  Wallet, 
+  Settings 
+} from 'lucide-vue-next'
 
 const isCollapsed = ref(false)
 
 const toggleSidebar = () => {
   isCollapsed.value = !isCollapsed.value
 }
+
+// Структура ERP-меню
+const navGroups = [
+  {
+    title: 'ОПЕРАЦИИ',
+    items: [
+      { label: 'Главная', to: '/dashboard', icon: LayoutDashboard }
+    ]
+  },
+  {
+    title: 'СНАБЖЕНИЕ',
+    items: [
+      { label: 'Заявки', to: '/requests', icon: ShoppingCart },
+      { label: 'Заказы поставщикам', to: '/purchase-orders', icon: FileText },
+      { label: 'Поставщики', to: '/suppliers', icon: Users }
+    ]
+  },
+  {
+    title: 'СКЛАД И УЧЕТ',
+    items: [
+      { label: 'Остатки', to: '/inventory', icon: Boxes },
+      { label: 'Перемещения', to: '/transfers', icon: ArrowLeftRight }
+    ]
+  },
+  {
+    title: 'БИЗНЕС И ФИНАНСЫ',
+    items: [
+      { label: 'Счета и Оплаты', to: '/invoices', icon: Receipt },
+      { label: 'Расходы', to: '/expenses', icon: Wallet },
+      { label: 'Настройки', to: '/settings', icon: Settings }
+    ]
+  }
+]
 
 defineExpose({ toggleSidebar })
 </script>
@@ -57,15 +109,26 @@ defineExpose({ toggleSidebar })
   top: 0;
   box-sizing: border-box;
 
+  /* Элементы с плавным скрытием текста */
+  .menu-label,
+  .group-title,
+  .label,
+  .version-text {
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 200px;
+    opacity: 1;
+  }
+
+  /* Состояние СВЁРНУТО */
   &.collapsed {
     width: 72px;
 
     .sidebar-header {
-      flex-direction: column;
-      gap: var(--space-2);
       align-items: center;
-      height: auto;
-      padding: 0;
+      justify-content: center;
     }
 
     .nav-item {
@@ -73,56 +136,59 @@ defineExpose({ toggleSidebar })
       padding: var(--space-2) 0;
     }
 
-    .toggle-btn {
-      align-self: center;
+    /* Синхронно и плавно прячем текстовые блоки */
+    .menu-label,
+    .group-title,
+    .label,
+    .version-text {
+      opacity: 0;
+      max-width: 0;
+      pointer-events: none;
+    }
+
+    .nav-divider {
+      margin: var(--space-2) var(--space-2);
     }
   }
 
-  /* 1. ЛОГОТИП И ШАПКА */
+  /* 1. ШАПКА САЙДБАРА */
   .sidebar-header {
     display: flex;
-    flex-direction: column;
-    height: 40px;
-    margin-bottom: var(--space-8);
+    align-items: center;
+    height: 32px;
+    margin-bottom: var(--space-5);
     padding: 0 var(--space-2);
 
     .brand-wrapper {
-      display: flex;
-      align-items: center;
-      height: 100%;
-
       .menu-label {
-        font-size: 0.75rem;
+        display: block;
+        font-size: 0.7rem;
         font-weight: 800;
         text-transform: uppercase;
         color: var(--color-text-muted);
-        letter-spacing: 0.1em;
-        white-space: nowrap;
+        letter-spacing: 0.12em;
       }
     }
-  }
-
-  .fade-enter-active, .fade-leave-active {
-    transition: opacity 0.2s ease;
-  }
-  .fade-enter-from, .fade-leave-to {
-    opacity: 0;
   }
 
   /* 2. НАВИГАЦИЯ */
   .sidebar-nav {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    overflow-y: auto;
+    overflow-x: hidden;
 
     .group-title {
       display: block;
       font-size: 0.65rem;
       font-weight: 800;
       color: var(--color-text-muted);
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       margin-bottom: var(--space-2);
       padding-left: var(--space-2);
-      white-space: nowrap;
-      overflow: hidden;
+      text-transform: uppercase;
     }
 
     .nav-item {
@@ -135,9 +201,7 @@ defineExpose({ toggleSidebar })
       text-decoration: none;
       font-weight: 600;
       font-size: 0.875rem;
-      transition: all var(--transition-fast);
-      white-space: nowrap;
-      overflow: hidden;
+      transition: background var(--transition-fast), color var(--transition-fast);
 
       .nav-icon {
         width: 20px;
@@ -145,10 +209,6 @@ defineExpose({ toggleSidebar })
         min-width: 20px;
         color: var(--color-text-muted);
         transition: color var(--transition-fast);
-      }
-
-      .label {
-        white-space: nowrap;
       }
 
       &:hover {
@@ -169,39 +229,30 @@ defineExpose({ toggleSidebar })
         }
       }
     }
+
+    .nav-divider {
+      border: none;
+      border-top: 1px solid var(--color-border);
+      margin: var(--space-2) 0;
+      opacity: 0.6;
+      transition: margin 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
   }
 
-  /* 3. КНОПКА СВЕРНУТЬ */
-  .toggle-btn {
-    position: absolute;
-    bottom: var(--space-5);
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    color: var(--color-text-muted);
-    border-radius: var(--radius-full);
-    padding: var(--space-2);
-    cursor: pointer;
+  /* 3. ВЕРСИЯ В ФУТЕРЕ */
+  .sidebar-footer {
+    margin-top: auto;
+    padding-top: var(--space-4);
     display: flex;
-    align-items: center;
     justify-content: center;
-    transition: all var(--transition-fast);
-    z-index: 10;
-    box-shadow: var(--shadow-sm);
+    align-items: center;
 
-    .toggle-icon {
-      transition: transform var(--transition-base);
-
-      &.rotated {
-        transform: rotate(180deg);
-      }
-    }
-
-    &:hover {
-      background: var(--color-bg-secondary);
-      color: var(--color-text-main);
-      border-color: var(--color-border-strong);
+    .version-text {
+      font-size: 0.725rem;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      letter-spacing: 0.03em;
+      opacity: 0.8;
     }
   }
 }
