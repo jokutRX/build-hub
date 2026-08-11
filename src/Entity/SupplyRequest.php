@@ -8,6 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 
 #[ORM\Entity(repositoryClass: SupplyRequestRepository::class)]
+#[ORM\Table(name: 'supply_request')]
+#[ORM\Index(name: 'idx_supply_request_created_at', columns: ['created_at'])]
 class SupplyRequest implements JsonSerializable
 {
     #[ORM\Id]
