@@ -103,6 +103,58 @@ class SupplyRequestController extends AbstractController
         return $this->json($supplyRequest, Response::HTTP_CREATED);
     }
 
+    #[Route('/bulk-status', methods: ['POST'])]
+    public function bulkStatus(
+        Request $request,
+        SupplyRequestRepository $repository,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $ids = $data['ids'] ?? [];
+        $status = $data['status'] ?? null;
+
+        if (empty($ids) || !$status) {
+            return $this->json(['error' => 'Параметры ids и status обязательны'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $requests = $repository->findBy(['id' => $ids]);
+        foreach ($requests as $supplyRequest) {
+            $supplyRequest->setStatus($status);
+        }
+
+        $em->flush();
+
+        return $this->json(['success' => true, 'updatedCount' => count($requests)]);
+    }
+
+    #[Route('/merge-trip', methods: ['POST'])]
+    public function mergeTrip(
+        Request $request,
+        SupplyRequestRepository $repository,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $ids = $data['ids'] ?? [];
+
+        if (empty($ids)) {
+            return $this->json(['error' => 'Массив ids не может быть пустым'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $requests = $repository->findBy(['id' => $ids]);
+        
+        // Генерация простого ID рейса (в реальном проекте может быть отдельной сущностью Trip)
+        $tripId = time();
+
+        foreach ($requests as $supplyRequest) {
+            $supplyRequest->setTripId($tripId);
+            $supplyRequest->setStatus('IN_TRIP');
+        }
+
+        $em->flush();
+
+        return $this->json(['success' => true, 'tripId' => $tripId, 'mergedCount' => count($requests)]);
+    }
+
     #[Route('/{id}', methods: ['DELETE'])]
     public function delete(SupplyRequest $supplyRequest, EntityManagerInterface $em): JsonResponse
     {

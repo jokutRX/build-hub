@@ -32,6 +32,14 @@ class SupplyRequest implements JsonSerializable
     #[ORM\Column(length: 20)]
     private ?string $priority = null;
 
+    // --- СТАТУСЫ И РЕЙСЫ ---
+
+    #[ORM\Column(length: 50, options: ['default' => 'NEW'])]
+    private string $status = 'NEW';
+
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $tripId = null;
+
     // --- НОВЫЕ ПОЛЯ ЛОГИСТИКИ И РАЗГРУЗКИ ---
 
     #[ORM\Column(length: 10, nullable: true)]
@@ -75,6 +83,14 @@ class SupplyRequest implements JsonSerializable
     public function getPriority(): ?string { return $this->priority; }
     public function setPriority(string $priority): static { $this->priority = $priority; return $this; }
 
+    // --- ГЕТТЕРЫ И СЕТТЕРЫ ДЛЯ СТАТУСА И РЕЙСА ---
+
+    public function getStatus(): string { return $this->status; }
+    public function setStatus(string $status): static { $this->status = $status; return $this; }
+
+    public function getTripId(): ?int { return $this->tripId; }
+    public function setTripId(?int $tripId): static { $this->tripId = $tripId; return $this; }
+
     // --- ГЕТТЕРЫ И СЕТТЕРЫ ДЛЯ ЛОГИСТИКИ ---
 
     public function getDeliveryTimeStart(): ?string { return $this->deliveryTimeStart; }
@@ -106,6 +122,8 @@ class SupplyRequest implements JsonSerializable
             'quantity' => $this->quantity,
             'unit' => $this->unit,
             'priority' => $this->priority,
+            'status' => $this->status,
+            'tripId' => $this->tripId,
             'deliveryTimeStart' => $this->deliveryTimeStart,
             'deliveryTimeEnd' => $this->deliveryTimeEnd,
             'unloadingEquipment' => $this->unloadingEquipment,

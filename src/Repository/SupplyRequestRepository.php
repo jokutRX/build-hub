@@ -42,4 +42,63 @@ class SupplyRequestRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Выборка заявок по статусу
+     */
+    public function findByStatus(string $status, int $limit = 100): array
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.status = :status')
+            ->setParameter('status', $status)
+            ->orderBy('s.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Поиск всех заявок, привязанных к конкретному рейсу
+     */
+    public function findByTripId(int $tripId): array
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.tripId = :tripId')
+            ->setParameter('tripId', $tripId)
+            ->orderBy('s.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Комбинированная фильтрация (дата + статус + объект)
+     */
+    public function findByFilters(?\DateTimeInterface $date = null, ?string $status = null, ?string $site = null, int $limit = 100): array
+    {
+        $qb = $this->createQueryBuilder('s');
+
+        if ($date) {
+            $start = \DateTime::createFromInterface($date)->setTime(0, 0, 0);
+            $end = \DateTime::createFromInterface($date)->setTime(23, 59, 59);
+
+            $qb->andWhere('s.createdAt BETWEEN :start AND :end')
+               ->setParameter('start', $start)
+               ->setParameter('end', $end);
+        }
+
+        if ($status && $status !== 'ALL') {
+            $qb->andWhere('s.status = :status')
+               ->setParameter('status', $status);
+        }
+
+        if ($site) {
+            $qb->andWhere('s.site = :site')
+               ->setParameter('site', $site);
+        }
+
+        return $qb->orderBy('s.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }
