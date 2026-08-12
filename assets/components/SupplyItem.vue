@@ -1,5 +1,5 @@
 <template>
-  <div :class="['supply-card', { expanded: isExpanded, 'pending-delete': isPendingDelete }]">
+  <div :class="['supply-card', { expanded: isExpanded, 'pending-delete': isPendingDelete, 'has-trip': item.tripId }]">
     <!-- Шапка карточки (Кликабельная) -->
     <div class="card-header" @click="toggleExpand">
       <div class="header-left">
@@ -12,9 +12,19 @@
         <span :class="['arrow-icon', { rotated: isExpanded }]">›</span>
         <h3 class="title">{{ item.title }}</h3>
         <span class="site-badge">{{ item.site || item.object }}</span>
+        
+        <!-- Плашка номера рейса -->
+        <span v-if="item.tripId" class="trip-badge" title="Сгруппировано в рейс">
+          ⚡ Рейс #{{ item.tripId }}
+        </span>
       </div>
 
       <div class="header-right">
+        <!-- Статус заявки -->
+        <span :class="['status-badge', statusInfo.class]">
+          {{ statusInfo.text }}
+        </span>
+
         <!-- Склонение количества и единиц -->
         <span class="quantity">{{ displayQuantity }}</span>
         <span :class="['priority-badge', item.priority?.toLowerCase()]">
@@ -42,6 +52,16 @@
       <div v-if="isExpanded" class="card-details">
         <div class="card-details-inner">
           <div class="details-grid">
+            <div class="detail-item" v-if="item.status">
+              <span class="label">Текущий статус:</span>
+              <span class="value">{{ statusInfo.text }}</span>
+            </div>
+
+            <div class="detail-item" v-if="item.tripId">
+              <span class="label">Привязка к рейсу:</span>
+              <span class="value">Рейс № {{ item.tripId }}</span>
+            </div>
+
             <div class="detail-item" v-if="item.deliveryTimeStart">
               <span class="label">Окно доставки:</span>
               <span class="value">
@@ -191,7 +211,20 @@ const handleDuplicate = () => {
   emit('duplicate', props.item)
 }
 
-// JS-хуки для идеальной анимации accordion по высотам
+// Маппинг статусов
+const statusInfo = computed(() => {
+  const status = props.item.status || 'NEW'
+  const map = {
+    NEW: { text: 'Новая', class: 'status-new' },
+    IN_TRIP: { text: 'В рейсе', class: 'status-trip' },
+    IN_TRANSIT: { text: 'В пути', class: 'status-transit' },
+    COMPLETED: { text: 'Завершено', class: 'status-completed' },
+    CANCELLED: { text: 'Отменено', class: 'status-cancelled' }
+  }
+  return map[status] || { text: status, class: 'status-default' }
+})
+
+// JS-хуки для анимации accordion
 const onBeforeEnter = (el) => {
   el.style.height = '0'
   el.style.opacity = '0'
@@ -216,7 +249,6 @@ const onBeforeLeave = (el) => {
 }
 
 const onLeave = (el) => {
-  // Принудительный reflow для гарантированного старта анимации закрытия
   void el.offsetHeight
   el.style.height = '0'
   el.style.opacity = '0'
@@ -237,20 +269,17 @@ const copyToClipboard = (text, message) => {
   })
 }
 
-// Форматирование количества с правильным склонением
 const displayQuantity = computed(() => {
   const qty = props.item.quantity || props.item.amount || 0
   const unit = props.item.unit || 'шт'
   return formatUnit(qty, unit)
 })
 
-// Преобразование даты
 const formattedDate = computed(() => {
   const rawDate = props.item.createdAt || props.item.date
   return formatDate(rawDate)
 })
 
-// Корректное отображение спецтехники
 const displayUnloading = computed(() => {
   const val = props.item.unloadingEquipment
   if (typeof val === 'boolean') return val ? 'Требуется' : 'Не требуется'
@@ -263,7 +292,6 @@ const formatPriority = (p) => {
   return map[p] || p
 }
 
-// Извлечение посчитанных данных из ответа бэкенда
 const calcData = computed(() => {
   const c = props.item.calculation || props.item.calculationResult || props.item
   const rawTrips = c.tripsCount || c.trips_count || c.trips || 0
@@ -338,6 +366,10 @@ const showCopyToast = (message, isError = false) => {
   overflow: hidden;
   transition: box-shadow var(--transition-base), border-color var(--transition-base), opacity var(--transition-base);
 
+  &.has-trip {
+    border-left: 3px solid var(--color-primary);
+  }
+
   &.pending-delete {
     opacity: 0.5;
     pointer-events: none;
@@ -360,6 +392,7 @@ const showCopyToast = (message, isError = false) => {
       display: flex;
       align-items: center;
       gap: var(--space-3);
+      flex-wrap: wrap;
 
       .row-checkbox {
         width: 16px;
@@ -397,12 +430,59 @@ const showCopyToast = (message, isError = false) => {
         padding: var(--space-1) var(--space-2);
         border-radius: var(--radius-sm);
       }
+
+      .trip-badge {
+        background: rgba(99, 102, 241, 0.12);
+        color: #6366f1;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: var(--radius-sm);
+        border: 1px solid rgba(99, 102, 241, 0.25);
+      }
     }
 
     .header-right {
       display: flex;
       align-items: center;
       gap: var(--space-4);
+
+      .status-badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: var(--radius-sm);
+
+        &.status-new {
+          background: rgba(59, 130, 246, 0.12);
+          color: #2563eb;
+        }
+
+        &.status-trip {
+          background: rgba(99, 102, 241, 0.12);
+          color: #4f46e5;
+        }
+
+        &.status-transit {
+          background: rgba(245, 158, 11, 0.12);
+          color: #d97706;
+        }
+
+        &.status-completed {
+          background: rgba(16, 185, 129, 0.12);
+          color: #059669;
+        }
+
+        &.status-cancelled {
+          background: rgba(239, 68, 68, 0.12);
+          color: #dc2626;
+        }
+
+        &.status-default {
+          background: var(--color-bg-secondary);
+          color: var(--color-text-muted);
+        }
+      }
 
       .quantity {
         font-weight: 700;
@@ -659,7 +739,6 @@ const showCopyToast = (message, isError = false) => {
   }
 }
 
-/* Стили и тайминги плавного выезда аккордеона */
 .expand-enter-active,
 .expand-leave-active {
   transition: height 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s cubic-bezier(0.25, 1, 0.5, 1);

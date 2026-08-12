@@ -1,19 +1,47 @@
 const BASE_URL = 'http://127.0.0.1:8000/api/requests'
 
-// Вспомогательная функция для парсинга и обработки ошибок API
-async function handleResponse(response) {
+/**
+ * Базовый HTTP-клиент для обработки запросов и ошибок
+ * @param {string} endpoint - Относительный или абсолютный путь
+ * @param {RequestInit} options - Параметры запроса fetch
+ */
+async function request(endpoint = '', options = {}) {
+  const url = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${endpoint}`
+  
+  const headers = {
+    'Accept': 'application/json',
+    ...options.headers,
+  }
+
+  // Если передаем тело запроса и не переопределили Content-Type, ставим JSON
+  if (options.body && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json'
+  }
+
+  const config = {
+    ...options,
+    headers,
+  }
+
+  const response = await fetch(url, config)
+
+  // Обработка 204 No Content
+  if (response.status === 204) {
+    return true
+  }
+
   const data = await response.json().catch(() => null)
 
   if (!response.ok) {
     // 1. Ошибки валидации Symfony (формат violations / errors)
     if (data?.errors && typeof data.errors === 'object') {
       const firstErrorField = Object.keys(data.errors)[0]
-      if (firstErrorField && data.errors[firstErrorField].length > 0) {
+      if (firstErrorField && Array.isArray(data.errors[firstErrorField]) && data.errors[firstErrorField].length > 0) {
         throw new Error(data.errors[firstErrorField][0])
       }
     }
 
-    // 2. Обычное сообщение об ошибке (detail, message или fallback)
+    // 2. Стандартное сообщение об ошибке
     const errorMessage = data?.detail || data?.message || data?.error || `Ошибка сервера (${response.status})`
     throw new Error(errorMessage)
   }
@@ -24,46 +52,54 @@ async function handleResponse(response) {
 export const supplyApi = {
   /**
    * Получить список всех заявок
+   * @param {string|null} [date] - Дата фильтрации (YYYY-MM-DD)
    */
-  async getAll() {
-    const res = await fetch(BASE_URL, {
-      headers: {
-        'Accept': 'application/json'
-      }
-    })
-    return handleResponse(res)
+  getAll(date = null) {
+    const query = date ? `?date=${encodeURIComponent(date)}` : ''
+    return request(query)
   },
 
   /**
    * Создать новую заявку
+   * @param {Object} requestData
    */
-  async create(requestData) {
-    const res = await fetch(BASE_URL, {
+  create(requestData) {
+    return request('', {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json' 
-      },
       body: JSON.stringify(requestData)
     })
-    
-    return handleResponse(res)
+  },
+
+  /**
+   * Массовое изменение статусов ("В доставку", "Завершить")
+   * @param {number[]} ids
+   * @param {string} status
+   */
+  updateBulkStatus(ids, status) {
+    return request('/bulk-status', {
+      method: 'POST',
+      body: JSON.stringify({ ids, status })
+    })
+  },
+
+  /**
+   * Объединение нескольких заявок в один рейс
+   * @param {number[]} ids
+   */
+  mergeToTrip(ids) {
+    return request('/merge-trip', {
+      method: 'POST',
+      body: JSON.stringify({ ids })
+    })
   },
 
   /**
    * Удалить заявку по ID
+   * @param {number|string} id
    */
-  async delete(id) {
-    const res = await fetch(`${BASE_URL}/${id}`, { 
-      method: 'DELETE',
-      headers: { 
-        'Accept': 'application/json' 
-      }
+  delete(id) {
+    return request(`/${id}`, {
+      method: 'DELETE'
     })
-    
-    // Если бэкенд возвращает 204 No Content
-    if (res.status === 204) return true
-
-    return handleResponse(res)
   }
 }
