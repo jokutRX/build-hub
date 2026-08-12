@@ -215,7 +215,7 @@ const formattedPositionsCount = computed(() => {
 const totalWeight = computed(() => {
   return requests.value
     .filter(item => selectedIds.value.has(item.id))
-    .reduce((sum, item) => sum + (item.quantity || 0), 0)
+    .reduce((sum, item) => sum + (item.quantity || item.amount || 0), 0)
     .toFixed(2)
 })
 
@@ -223,18 +223,35 @@ const totalCost = computed(() => {
   return requests.value
     .filter(item => selectedIds.value.has(item.id))
     .reduce((sum, item) => {
-      const price = (item.quantity > 15) ? 7000 : 3000
+      const weight = item.quantity || item.amount || 0
+      const price = (weight > 15) ? 7000 : 3000
       return sum + price
     }, 0)
     .toLocaleString('ru-RU')
 })
 
-const bulkAction = (status) => {
-  showToast('Успешно', `Статус ${status} применен к ${selectedIds.value.size} заявкам`)
-  selectedIds.value.clear()
+const bulkAction = async (status) => {
+  if (selectedIds.value.size === 0) return
+
+  const idsArray = Array.from(selectedIds.value)
+
+  try {
+    loading.value = true
+    await supplyApi.updateBulkStatus(idsArray, status)
+
+    const statusLabel = status === 'IN_TRANSIT' ? '«В доставке»' : '«Завершено»'
+    showToast('Успешно', `Статус ${statusLabel} применен к ${idsArray.length} заявкам`, 'success')
+
+    selectedIds.value.clear()
+    await loadRequests()
+  } catch (err) {
+    showToast('Ошибка', err.message || 'Не удалось обновить статус заявок', 'error')
+  } finally {
+    loading.value = false
+  }
 }
 
-const mergeRequests = () => {
+const mergeRequests = async () => {
   const selected = requests.value.filter(i => selectedIds.value.has(i.id))
   if (selected.length === 0) return
 
@@ -245,9 +262,22 @@ const mergeRequests = () => {
     showToast('Ошибка', 'Объединение возможно только для одного объекта', 'error')
     return
   }
-  
-  showToast('Рейс сформирован', `Заявки объединены в 1 рейс. Вес: ${totalWeight.value} т`, 'success')
-  selectedIds.value.clear()
+
+  const idsArray = Array.from(selectedIds.value)
+
+  try {
+    loading.value = true
+    await supplyApi.mergeToTrip(idsArray)
+
+    showToast('Рейс сформирован', `Заявки объединены в 1 рейс. Вес: ${totalWeight.value} т`, 'success')
+
+    selectedIds.value.clear()
+    await loadRequests()
+  } catch (err) {
+    showToast('Ошибка объединения', err.message || 'Не удалось сформировать рейс', 'error')
+  } finally {
+    loading.value = false
+  }
 }
 
 const handleCreate = async (newRequestData, resetFormCallback) => {
