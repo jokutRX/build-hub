@@ -373,6 +373,7 @@ const showCopyToast = (message, isError = false) => {
   &.pending-delete {
     opacity: 0.5;
     pointer-events: none;
+    transition: opacity 0.3s ease;
   }
 
   &:hover {

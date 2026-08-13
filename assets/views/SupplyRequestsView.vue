@@ -313,14 +313,23 @@ const cancelDelete = () => { pendingDelete.value = null }
 const confirmDelete = async () => {
   if (!pendingDelete.value) return
   const itemToDelete = pendingDelete.value
+  
+  // Удаляем элемент локально сразу, чтобы избежать перерендера при обновлении списка
+  const index = requests.value.findIndex(r => r.id === itemToDelete.id)
+  if (index !== -1) {
+    requests.value.splice(index, 1)
+  }
+  
+  // Очищаем состояние удаления до начала запроса
+  pendingDelete.value = null
+
   try {
     await supplyApi.delete(itemToDelete.id)
-    await loadRequests()
+    // После успешного удаления можно просто обновить данные (фоновая синхронизация)
+    // или оставить список в актуальном состоянии, если API подтвердило удаление.
   } catch (err) {
     showToast('Ошибка удаления', 'Не удалось удалить заявку', 'error')
     await loadRequests()
-  } finally {
-    if (pendingDelete.value?.id === itemToDelete.id) pendingDelete.value = null
   }
 }
 

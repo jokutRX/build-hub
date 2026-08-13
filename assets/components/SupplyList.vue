@@ -12,7 +12,7 @@
     </div>
 
     <!-- Список карточек -->
-    <div v-else class="list-wrapper">
+    <TransitionGroup name="list" tag="div" class="list-wrapper">
       <SupplyItem 
         v-for="(item, index) in requests" 
         :key="item.id" 
@@ -23,7 +23,7 @@
         @duplicate="$emit('duplicate', $event)"
         @select="$emit('select-item', item, index, $event)"
       />
-    </div>
+    </TransitionGroup>
   </div>
 </template>
 
@@ -60,7 +60,24 @@ defineEmits(['request-delete', 'duplicate', 'select-item'])
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+    min-height: 1px;
   }
+
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+.list-leave-active {
+  position: absolute;
+}
+.list-move {
+  transition: transform 0.5s ease;
+}
 
   .empty-state {
     text-align: center;
