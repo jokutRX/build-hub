@@ -63,7 +63,7 @@ class SupplyRequest implements JsonSerializable
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Moscow'));
     }
 
     public function getId(): ?int { return $this->id; }
