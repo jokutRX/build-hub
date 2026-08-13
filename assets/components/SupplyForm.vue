@@ -183,17 +183,26 @@ const timeError = computed(() => {
   return ''
 })
 
+const isSubmitting = ref(false)
+
 // Блокировка кнопки если есть ошибка по времени или не заполнены обязательные поля
 const isSubmitDisabled = computed(() => {
-  return !!timeError.value || !form.title || !form.object || !form.amount
+  return isSubmitting.value || !!timeError.value || !form.title || !form.object || !form.amount
 })
 
 defineExpose({ resetForm, populateFromTemplate })
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (isSubmitDisabled.value) return
+  
+  isSubmitting.value = true
+  
   // Передаем копию данных формы и колбэк для сброса
-  emit('create', { ...form }, resetForm)
+  emit('create', { ...form }, () => {
+    resetForm()
+    isSubmitting.value = false
+    emit('close')
+  })
 }
 </script>
 
