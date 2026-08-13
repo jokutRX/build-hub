@@ -135,7 +135,7 @@ onMounted(() => {
   titleInput.value?.focus()
 })
 
-const initialForm = {
+const form = reactive({
   title: '',
   object: '',
   amount: 1,
@@ -144,24 +144,31 @@ const initialForm = {
   deliveryTimeStart: '09:00',
   deliveryTimeEnd: '12:00',
   unloadingEquipment: false
-}
-
-const form = reactive({ ...initialForm })
+})
 
 // Функция сброса формы к начальным значениям
 const resetForm = () => {
-  Object.assign(form, initialForm)
+  form.title = ''
+  form.object = ''
+  form.amount = 1
+  form.unit = 'тонны'
+  form.priority = 'MEDIUM'
+  form.deliveryTimeStart = '09:00'
+  form.deliveryTimeEnd = '12:00'
+  form.unloadingEquipment = false
 }
 
 const populateFromTemplate = (data) => {
-  form.title = data.title || ''
-  form.object = data.object || ''
-  form.amount = data.quantity || data.amount || 1
-  form.unit = data.unit || 'тонны'
-  form.priority = data.priority || 'MEDIUM'
-  form.deliveryTimeStart = data.deliveryTimeStart || '09:00'
-  form.deliveryTimeEnd = data.deliveryTimeEnd || '12:00'
-  form.unloadingEquipment = !!data.unloadingEquipment
+  Object.assign(form, {
+    title: data.title || '',
+    object: data.object || '',
+    amount: data.quantity ?? data.amount ?? 1,
+    unit: data.unit ?? 'тонны',
+    priority: data.priority ?? 'MEDIUM',
+    deliveryTimeStart: data.deliveryTimeStart ?? '09:00',
+    deliveryTimeEnd: data.deliveryTimeEnd ?? '12:00',
+    unloadingEquipment: !!data.unloadingEquipment
+  })
 }
 
 // Проверка корректности промежутка времени
