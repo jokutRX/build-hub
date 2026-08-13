@@ -30,6 +30,17 @@
         <span :class="['priority-badge', item.priority?.toLowerCase()]">
           {{ formatPriority(item.priority) }}
         </span>
+        
+        <!-- Кнопка завершения (в архив) -->
+        <button 
+          v-if="item.status !== 'COMPLETED'"
+          class="btn-complete" 
+          title="Завершить заявку" 
+          @click.stop="$emit('complete', item)"
+        >
+          <CheckCircle2 :size="16" />
+        </button>
+
         <button class="btn-duplicate" title="Дублировать" @click.stop="handleDuplicate">
           <Copy :size="16" />
         </button>
@@ -191,7 +202,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { formatDate, formatUnit, pluralize } from '../utils/formatters.js'
-import { Copy, Trash2 } from 'lucide-vue-next'
+import { Copy, Trash2, CheckCircle2, RotateCcw } from 'lucide-vue-next'
 
 const props = defineProps({
   item: { type: Object, required: true },
@@ -199,7 +210,7 @@ const props = defineProps({
   selected: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['delete', 'duplicate', 'select'])
+const emit = defineEmits(['delete', 'duplicate', 'select', 'complete', 'restore'])
 
 const isExpanded = ref(false)
 
@@ -502,7 +513,7 @@ const showCopyToast = (message, isError = false) => {
         &.low { background: var(--color-low-bg); color: var(--color-low); }
       }
 
-      .btn-delete, .btn-duplicate {
+      .btn-delete, .btn-duplicate, .btn-complete, .btn-restore {
         background: transparent;
         border: none;
         color: var(--color-text-light);
@@ -517,6 +528,16 @@ const showCopyToast = (message, isError = false) => {
         &:hover {
           background: var(--color-bg-secondary);
         }
+      }
+
+      .btn-complete:hover {
+        color: var(--color-success);
+        background: rgba(16, 185, 129, 0.15);
+      }
+
+      .btn-restore:hover {
+        color: var(--color-primary);
+        background: rgba(var(--color-primary-rgb), 0.15);
       }
 
       .btn-delete:hover {

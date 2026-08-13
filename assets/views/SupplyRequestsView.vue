@@ -19,34 +19,24 @@
     <section class="registry-section">
       <div class="registry-header">
         <div class="title-wrap">
-          <h2>Реестр заявок</h2>
+          <h2>{{ isArchive ? 'Архив заявок' : 'Реестр заявок' }}</h2>
         </div>
 
         <div class="filters-bar">
           <div class="filter-controls">
-            <div class="filter-group">
-              <label>Дата поставки:</label>
-              <input type="date" v-model="selectedDate" class="filter-input" autocomplete="off" />
-              <button :class="['btn-quick-date', { active: isTodaySelected }]" @click="setToday">
-                Сегодня
-              </button>
-              <button :class="['btn-quick-date', { active: selectedDate === '' }]" @click="selectedDate = ''">
-                Все
-              </button>
+             <div class="filter-group">
+              <label>Вид:</label>
+              <button :class="['btn-quick-date', { active: isArchive === false }]" @click="isArchive = false">Активные</button>
+              <button :class="['btn-quick-date', { active: isArchive === true }]" @click="isArchive = true">Архив</button>
+              <button :class="['btn-quick-date', { active: isArchive === 'ALL' }]" @click="isArchive = 'ALL'">Все</button>
             </div>
-
-            <div class="filter-group">
-              <label>Приоритет:</label>
-              <select v-model="selectedPriority" class="filter-select" autocomplete="off">
-                <option value="ALL">Все приоритеты</option>
-                <option value="CRITICAL">Критичный</option>
-                <option value="MEDIUM">Средний</option>
-                <option value="LOW">Низкий</option>
-              </select>
+            
+            <div class="filter-group" v-if="!isArchive">
+              <label>Дата:</label>
+              <input type="date" v-model="selectedDate" class="filter-input" autocomplete="off" />
+              <button :class="['btn-quick-date', { active: isTodaySelected }]" @click="setToday">Сегодня</button>
             </div>
           </div>
-
-          <!-- Динамический счетчик позиций -->
           <span class="count-badge">{{ formattedPositionsCount }}</span>
         </div>
       </div>
@@ -60,6 +50,7 @@
         @request-delete="initiateDelete"
         @duplicate="handleDuplicate"
         @select-item="toggleSelect"
+        @complete="handleComplete"
       />
     </section>
 
@@ -156,6 +147,7 @@ const handleDuplicate = (item) => {
 
 const selectedDate = ref(getTodayString())
 const selectedPriority = ref('ALL')
+const isArchive = ref(false)
 const pendingDelete = ref(null)
 
 const toast = reactive({
@@ -200,6 +192,22 @@ const toggleSelect = (item, index, event) => {
 const filteredRequests = computed(() => {
   return requests.value.filter(item => {
     if (pendingDelete.value && item.id === pendingDelete.value.id) return false
+    
+    // Логика фильтрации по архиву
+    if (isArchive.value === 'ALL') {
+      return true
+    } else if (isArchive.value === true) {
+      return item.status === 'COMPLETED'
+    } else {
+      return item.status !== 'COMPLETED'
+    }
+  }).sort((a, b) => {
+    // Сортировка по дате создания: сверху новые, снизу старые
+    const dateA = new Date(a.createdAt || a.date || 0)
+    const dateB = new Date(b.createdAt || b.date || 0)
+    return dateB - dateA
+  }).filter(item => {
+    // Второстепенные фильтры
     const itemDate = item.createdAt ? item.createdAt.split('T')[0] : item.date
     const matchesDate = !selectedDate.value || itemDate === selectedDate.value
     const matchesPriority = selectedPriority.value === 'ALL' || item.priority === selectedPriority.value
@@ -300,6 +308,28 @@ const handleCreate = async (newRequestData, resetFormCallback) => {
     showToast('Заявка создана!', `Позиция "${newRequestData.title}" добавлена в реестр.`, 'success')
   } catch (err) {
     showToast('Ошибка сохранения', err.message || 'Не удалось сохранить заявку', 'error')
+  }
+}
+
+const handleComplete = async (item) => {
+  try {
+    loading.value = true
+    // Если это рейс, завершаем все заявки с этим tripId
+    if (item.tripId) {
+      const ids = requests.value
+        .filter(r => r.tripId === item.tripId)
+        .map(r => r.id)
+      await supplyApi.updateBulkStatus(ids, 'COMPLETED')
+      showToast('Рейс завершен', `Все заявки рейса #${item.tripId} перенесены в архив`, 'success')
+    } else {
+      await supplyApi.updateBulkStatus([item.id], 'COMPLETED')
+      showToast('Заявка завершена', `"${item.title}" перенесена в архив`, 'success')
+    }
+    await loadRequests()
+  } catch (err) {
+    showToast('Ошибка', err.message || 'Не удалось завершить заявку', 'error')
+  } finally {
+    loading.value = false
   }
 }
 
