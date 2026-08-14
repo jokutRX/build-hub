@@ -24,17 +24,21 @@
 
         <div class="filters-bar">
           <div class="filter-controls">
-             <div class="filter-group">
-              <label>Вид:</label>
-              <button :class="['btn-quick-date', { active: isArchive === false }]" @click="isArchive = false">Активные</button>
-              <button :class="['btn-quick-date', { active: isArchive === true }]" @click="isArchive = true">Архив</button>
-              <button :class="['btn-quick-date', { active: isArchive === 'ALL' }]" @click="isArchive = 'ALL'">Все</button>
+            <div class="filter-group">
+              <button :class="['btn-quick-date', { active: filterMode === 'today' }]" @click="setFilterMode('today')">Сегодня</button>
+              <button :class="['btn-quick-date', { active: filterMode === 'all' }]" @click="setFilterMode('all')">Все</button>
+              <button :class="['btn-quick-date', { active: filterMode === 'archive' }]" @click="setFilterMode('archive')">Архив</button>
             </div>
             
-            <div class="filter-group" v-if="!isArchive">
+            <div class="filter-group" v-if="filterMode !== 'archive'">
               <label>Дата:</label>
-              <input type="date" v-model="selectedDate" class="filter-input" autocomplete="off" />
-              <button :class="['btn-quick-date', { active: isTodaySelected }]" @click="setToday">Сегодня</button>
+              <input 
+                type="date" 
+                v-model="selectedDate" 
+                class="filter-input" 
+                autocomplete="off" 
+                @change="handleDateChange"
+              />
             </div>
           </div>
           <span class="count-badge">{{ formattedPositionsCount }}</span>
@@ -147,9 +151,10 @@ const handleDuplicate = (item) => {
   isFormOpen.value = true
 }
 
+const filterMode = ref('today') // 'today' | 'all' | 'archive' | 'custom-date'
 const selectedDate = ref(getTodayString())
 const selectedPriority = ref('ALL')
-const isArchive = ref(false)
+const isArchive = computed(() => filterMode.value === 'archive')
 const pendingDelete = ref(null)
 
 const toast = reactive({
@@ -166,8 +171,26 @@ const showToast = (title, message, type = 'success') => {
   toast.show = true
 }
 
-const isTodaySelected = computed(() => selectedDate.value === getTodayString())
-const setToday = () => { selectedDate.value = getTodayString() }
+const setFilterMode = (mode) => {
+  filterMode.value = mode
+  if (mode === 'today') {
+    selectedDate.value = getTodayString()
+  } else {
+    selectedDate.value = ''
+  }
+}
+
+const handleDateChange = () => {
+  if (selectedDate.value) {
+    if (selectedDate.value === getTodayString()) {
+      filterMode.value = 'today'
+    } else {
+      filterMode.value = 'custom-date'
+    }
+  } else {
+    filterMode.value = 'all'
+  }
+}
 
 const selectedIds = ref(new Set())
 const lastSelectedIndex = ref(null)
@@ -196,24 +219,31 @@ const filteredRequests = computed(() => {
     if (pendingDelete.value && item.id === pendingDelete.value.id) return false
     
     // Логика фильтрации по архиву
-    if (isArchive.value === 'ALL') {
-      return true
-    } else if (isArchive.value === true) {
+    if (isArchive.value) {
       return item.status === 'COMPLETED'
     } else {
       return item.status !== 'COMPLETED'
     }
+  }).filter(item => {
+    // Второстепенные фильтры по дате и приоритету
+    const itemDate = item.createdAt ? item.createdAt.split('T')[0] : item.date
+    
+    let matchesDate = true
+    if (filterMode.value === 'today') {
+      matchesDate = itemDate === getTodayString()
+    } else if (filterMode.value === 'custom-date') {
+      matchesDate = !selectedDate.value || itemDate === selectedDate.value
+    } else if (filterMode.value === 'all') {
+      matchesDate = true
+    }
+    
+    const matchesPriority = selectedPriority.value === 'ALL' || item.priority === selectedPriority.value
+    return matchesDate && matchesPriority
   }).sort((a, b) => {
     // Сортировка по дате создания: сверху новые, снизу старые
     const dateA = new Date(a.createdAt || a.date || 0)
     const dateB = new Date(b.createdAt || b.date || 0)
     return dateB - dateA
-  }).filter(item => {
-    // Второстепенные фильтры
-    const itemDate = item.createdAt ? item.createdAt.split('T')[0] : item.date
-    const matchesDate = !selectedDate.value || itemDate === selectedDate.value
-    const matchesPriority = selectedPriority.value === 'ALL' || item.priority === selectedPriority.value
-    return matchesDate && matchesPriority
   })
 })
 
