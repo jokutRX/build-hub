@@ -7,7 +7,7 @@
         <p>Управление потребностями объектов и автоматизация снабжения</p>
       </div>
 
-      <button class="btn-create-primary" @click="isFormOpen = true">
+      <button class="btn-create-primary" @click="openCreateForm">
         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path d="M12 5v14M5 12h14" />
         </svg>
@@ -78,7 +78,7 @@
         <div v-if="isFormOpen" class="drawer-overlay" @click.self="closeForm">
           <div class="drawer-content">
             <SupplyForm 
-              ref="supplyFormRef"
+              :initial-data="formTemplate"
               @create="handleCreate" 
               @close="closeForm" 
             />
@@ -130,19 +130,21 @@ const getTodayString = () => {
 const requests = ref([])
 const loading = ref(false)
 const isFormOpen = ref(false)
-const supplyFormRef = ref(null)
+const formTemplate = ref(null)
+
+const openCreateForm = () => {
+  formTemplate.value = null
+  isFormOpen.value = true
+}
 
 const closeForm = () => {
   isFormOpen.value = false
+  formTemplate.value = null
 }
 
 const handleDuplicate = (item) => {
+  formTemplate.value = item
   isFormOpen.value = true
-  setTimeout(() => {
-    if (supplyFormRef.value) {
-      supplyFormRef.value.populateFromTemplate(item)
-    }
-  }, 100)
 }
 
 const selectedDate = ref(getTodayString())

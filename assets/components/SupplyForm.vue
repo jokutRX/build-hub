@@ -1,7 +1,7 @@
 <template>
   <div class="form-container">
     <div class="form-header">
-      <h2>Новая заявка</h2>
+      <h2>{{ initialData ? 'Дублирование заявки' : 'Новая заявка' }}</h2>
       <button class="btn-close" type="button" @click="$emit('close')">✕</button>
     </div>
 
@@ -125,7 +125,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
+
+const props = defineProps({
+  initialData: {
+    type: Object,
+    default: null
+  }
+})
 
 const emit = defineEmits(['create', 'close'])
 
@@ -159,9 +166,14 @@ const resetForm = () => {
 }
 
 const populateFromTemplate = (data) => {
+  if (!data) {
+    resetForm()
+    return
+  }
+
   Object.assign(form, {
     title: data.title || '',
-    object: data.object || '',
+    object: data.object || data.site || '',
     amount: data.quantity ?? data.amount ?? 1,
     unit: data.unit ?? 'тонны',
     priority: data.priority ?? 'MEDIUM',
@@ -170,6 +182,14 @@ const populateFromTemplate = (data) => {
     unloadingEquipment: !!data.unloadingEquipment
   })
 }
+
+watch(
+  () => props.initialData,
+  (newData) => {
+    populateFromTemplate(newData)
+  },
+  { immediate: true }
+)
 
 // Проверка корректности промежутка времени
 const timeError = computed(() => {
